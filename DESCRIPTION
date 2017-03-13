@@ -1,0 +1,13 @@
+Package: gaston.utils
+Type: Package
+Title: Parallel GWAS with gaston
+Version: 0.1
+Date: 2017-03-11
+Encoding: UTF-8
+Author: Hervé Perdry 
+Maintainer: Hervé Perdry <herve.perdry@u-psud.fr>
+Description: Miscellaneous functions to use with Gaston
+License: GPL-3
+LinkingTo: Rcpp, RcppEigen, gaston
+Depends: R.utils, Rcpp, parallel, gaston
+NeedsCompilation: yes
