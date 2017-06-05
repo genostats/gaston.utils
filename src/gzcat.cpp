@@ -12,6 +12,7 @@ void gzcat(CharacterVector filename) {
   for(std::string line; std::getline(in, line); ) {
     Rcout << line << std::endl;
   }
+  in.close();
   return;
 }
 
