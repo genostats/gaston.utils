@@ -15,5 +15,5 @@ export(association.test.parallel)
 
 # to deal with impute2 files
 export(association.test.dosage, association.test.dosage.parallel)
-export(read.gen.file, dim.gen.file)
+export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)
 

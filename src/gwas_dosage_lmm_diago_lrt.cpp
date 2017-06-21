@@ -2,7 +2,7 @@
 #include <RcppEigen.h>
 #include <fstream>
 #include "gzstream.h"
-#include "read_gen_file.h"
+#include "dosage_files.h"
 #include <cmath>
 #include "diago2_full.h"
 #include "diago2_full_nocovar.h"
@@ -19,8 +19,7 @@ using namespace Rcpp;
 List GWAS_dosage_lmm_lrt(CharacterVector filename, NumericVector Y, NumericMatrix X, 
                   int p, NumericVector Sigma, NumericMatrix U, int beg, int end, double tol) {
 
-  igzstream in( (char *) filename[0] );
-  if(!in.good()) stop("Can't open file");
+  dosages in(filename);
 
   int n = Sigma.size();
   int r = X.ncol();
@@ -78,14 +77,14 @@ List GWAS_dosage_lmm_lrt(CharacterVector filename, NumericVector Y, NumericMatri
   diag_full_likelihood<MATRIX, VECTOR, scalar> A(p, y, x, sigma);
 
 
-  std::string snp_id, A1, A2;
+  std::string snp_id, chr, A1, A2;
   int snp_pos;
-  std::vector<std::string> SNP_ID, AL1, AL2;
+  std::vector<std::string> SNP_ID, CHR, AL1, AL2;
   std::vector<int> POS;
   std::vector<double> dosage;
 
   int i = 0;
-  while( read_gen_line(in, dosage, snp_id, snp_pos, A1, A2) ) {
+  while( in.read_line(dosage, snp_id, snp_pos, chr, A1, A2) ) {
     i++;
     if(i < beg) {
       dosage.clear();
@@ -97,6 +96,7 @@ List GWAS_dosage_lmm_lrt(CharacterVector filename, NumericVector Y, NumericMatri
     }
     SNP_ID.push_back(snp_id);
     POS.push_back(snp_pos);
+    CHR.push_back(chr);
     AL1.push_back(A1);
     AL2.push_back(A2);
 
@@ -117,6 +117,7 @@ List GWAS_dosage_lmm_lrt(CharacterVector filename, NumericVector Y, NumericMatri
 
   List R;
   R["id"] = wrap(SNP_ID);
+  R["chr"] = wrap(CHR);
   R["pos"] = wrap(POS);
   R["A1"] = wrap(AL1);
   R["A2"] = wrap(AL2);

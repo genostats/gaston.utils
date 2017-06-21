@@ -2,7 +2,7 @@
 #include <RcppEigen.h>
 #include <fstream>
 #include "gzstream.h"
-#include "read_gen_file.h"
+#include "dosage_files.h"
 #include <cmath>
 
 using namespace Rcpp;
@@ -10,8 +10,7 @@ using namespace Rcpp;
 //[[Rcpp::export]]
 List GWAS_dosage_lmm_score(CharacterVector filename, NumericVector PY, NumericMatrix P, int beg, int end) {
 
-  igzstream in( (char *) filename[0] );
-  if(!in.good()) stop("Can't open file");
+  dosages in(filename);
 
   Eigen::Map<Eigen::MatrixXd> Py(as<Eigen::Map<Eigen::MatrixXd> >(PY));
   Eigen::Map<Eigen::MatrixXd> PP(as<Eigen::Map<Eigen::MatrixXd> >(P));
@@ -22,14 +21,14 @@ List GWAS_dosage_lmm_score(CharacterVector filename, NumericVector PY, NumericMa
   NumericVector s(r);
   double t, v;  
 
-  std::string snp_id, A1, A2;
+  std::string snp_id, chr, A1, A2;
   int snp_pos;
-  std::vector<std::string> SNP_ID, AL1, AL2;
+  std::vector<std::string> SNP_ID, CHR, AL1, AL2;
   std::vector<int> POS;
   std::vector<double> dosage;
 
   int i = 0;
-  while( read_gen_line(in, dosage, snp_id, snp_pos, A1, A2) ) {
+  while( in.read_line(dosage, snp_id, snp_pos, chr, A1, A2) ) {
     i++;
     if(i < beg) {
       dosage.clear();
@@ -41,6 +40,7 @@ List GWAS_dosage_lmm_score(CharacterVector filename, NumericVector PY, NumericMa
     }
     SNP_ID.push_back(snp_id);
     POS.push_back(snp_pos);
+    CHR.push_back(chr);
     AL1.push_back(A1);
     AL2.push_back(A2);
 
@@ -56,6 +56,7 @@ List GWAS_dosage_lmm_score(CharacterVector filename, NumericVector PY, NumericMa
   
   List S;
   S["id"] = wrap(SNP_ID);
+  S["chr"] = wrap(CHR);
   S["pos"] = wrap(POS);
   S["A1"] = wrap(AL1);
   S["A2"] = wrap(AL2);
@@ -69,8 +70,7 @@ List GWAS_dosage_lmm_score(CharacterVector filename, NumericVector PY, NumericMa
 //[[Rcpp::export]]
 List GWAS_dosage_lmm_score_f(CharacterVector filename, NumericVector PY, NumericMatrix P, int beg, int end) {
 
-  igzstream in( (char *) filename[0] );
-  if(!in.good()) stop("Can't open file");
+  dosages in(filename);
 
   int n = PY.size();
   if(P.nrow() != n || P.ncol() != n) 
@@ -91,14 +91,14 @@ List GWAS_dosage_lmm_score_f(CharacterVector filename, NumericVector PY, Numeric
   NumericVector s(r);
   double t, v;  
   
-  std::string snp_id, A1, A2;
+  std::string snp_id, chr, A1, A2;
   int snp_pos;
-  std::vector<std::string> SNP_ID, AL1, AL2;
+  std::vector<std::string> SNP_ID, CHR, AL1, AL2;
   std::vector<int> POS;
   std::vector<float> dosage;
 
   int i = 0;
-  while( read_gen_line(in, dosage, snp_id, snp_pos, A1, A2) ) {
+  while( in.read_line(dosage, snp_id, snp_pos, chr, A1, A2) ) {
     i++;
     if(i < beg) {
       dosage.clear();
@@ -110,6 +110,7 @@ List GWAS_dosage_lmm_score_f(CharacterVector filename, NumericVector PY, Numeric
     }
     SNP_ID.push_back(snp_id);
     POS.push_back(snp_pos);
+    CHR.push_back(chr);
     AL1.push_back(A1);
     AL2.push_back(A2);
 
@@ -125,6 +126,7 @@ List GWAS_dosage_lmm_score_f(CharacterVector filename, NumericVector PY, Numeric
   
   List S;
   S["id"] = wrap(SNP_ID);
+  S["chr"] = wrap(CHR);
   S["pos"] = wrap(POS);
   S["A1"] = wrap(AL1);
   S["A2"] = wrap(AL2);

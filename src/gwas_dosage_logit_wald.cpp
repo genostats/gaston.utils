@@ -3,14 +3,13 @@
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"
-#include "read_gen_file.h"
+#include "dosage_files.h"
 #include <cmath>
 
 //[[Rcpp::export]]
 List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, NumericMatrix X, int beg, int end, double tol) {
 
-  igzstream in( (char *) filename[0] );
-  if(!in.good()) stop("Can't open file");
+  dosages in(filename);
 
   int n = Y.size();
   int r = X.ncol();
@@ -31,14 +30,14 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
   VectorXf beta(r);
   beta.setZero();
 
-  std::string snp_id, A1, A2;
+  std::string snp_id, chr, A1, A2;
   int snp_pos;
-  std::vector<std::string> SNP_ID, AL1, AL2;
+  std::vector<std::string> SNP_ID, CHR, AL1, AL2;
   std::vector<int> POS;
   std::vector<float> dosage;
 
   int i = 0;
-  while( read_gen_line(in, dosage, snp_id, snp_pos, A1, A2) ) {
+  while( in.read_line(dosage, snp_id, snp_pos, chr, A1, A2) ) {
     i++;
     if(i < beg) {
       dosage.clear();
@@ -50,6 +49,7 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
     }
     SNP_ID.push_back(snp_id);
     POS.push_back(snp_pos);
+    CHR.push_back(chr);
     AL1.push_back(A1);
     AL2.push_back(A2);
 
@@ -67,6 +67,7 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
 
   List R;
   R["id"] = wrap(SNP_ID);
+  R["chr"] = wrap(CHR);
   R["pos"] = wrap(POS);
   R["A1"] = wrap(AL1);
   R["A2"] = wrap(AL2);
