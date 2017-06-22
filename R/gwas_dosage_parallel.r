@@ -1,8 +1,9 @@
 association.test.dosage.parallel <- function(filename, Y, X, method = c("lm", "lmm"), response = c("quantitative", "binary"), 
                                       test = c("score", "wald", "lrt"), K, eigenK, p = 0, 
                                       tol = .Machine$double.eps^0.25, n.cores = 1, ...) {
-  nb.snps <- R.utils::countLines(filename)
-  nb.inds <- nb.inds.gen.file(filename)
+  dims <- dim.dosage.file(filename)
+  nb.inds <- dims[1]
+  nb.snps <- dims[2]
 
   arg <- as.list(match.call())[-1]
   arg$n.cores <- NULL 
