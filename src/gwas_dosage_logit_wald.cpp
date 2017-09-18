@@ -35,6 +35,8 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
   std::vector<std::string> SNP_ID, CHR, AL1, AL2;
   std::vector<int> POS;
   std::vector<float> dosage;
+  std::vector<double> F1;
+  std::vector<double> F2;
 
   int i = 0;
   while( in.read_line(dosage, snp_id, snp_pos, chr, A1, A2) ) {
@@ -52,6 +54,11 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
     CHR.push_back(chr);
     AL1.push_back(A1);
     AL2.push_back(A2);
+
+    // ajout deux cols fréquences
+    double s = std::accumulate(dosage.begin(), dosage.end(), 0.0)/dosage.size()/2.0;
+    F1.push_back(1.0 - s);
+    F2.push_back(s);
 
     // remplir dernière colonne de x par dosage...
     for(int ii = 0; ii < n; ii++) x(ii,r-1) = dosage[ii];
@@ -71,6 +78,8 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
   R["pos"] = wrap(POS);
   R["A1"] = wrap(AL1);
   R["A2"] = wrap(AL2);
+  R["freq1"] = wrap(F1);
+  R["freq2"] = wrap(F2);
   R["beta"] = BETA;
   R["sd"] = SDBETA;
   return R;

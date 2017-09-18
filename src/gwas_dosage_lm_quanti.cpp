@@ -30,6 +30,8 @@ List GWAS_dosage_lm_quanti(CharacterVector filename, NumericVector Y, NumericMat
   std::vector<std::string> SNP_ID, CHR, AL1, AL2;
   std::vector<int> POS;
   std::vector<double> dosage;
+  std::vector<double> F1;
+  std::vector<double> F2;
 
   int i = 0;
   while( in.read_line(dosage, snp_id, snp_pos, chr, A1, A2) ) {
@@ -47,6 +49,11 @@ List GWAS_dosage_lm_quanti(CharacterVector filename, NumericVector Y, NumericMat
     CHR.push_back(chr);
     AL1.push_back(A1);
     AL2.push_back(A2);
+
+    // ajout deux cols fréquences
+    double s = std::accumulate(dosage.begin(), dosage.end(), 0.0)/dosage.size()/2.0;
+    F1.push_back(1.0 - s);
+    F2.push_back(s);
 
     // Eigen::VectorXd à partir du vecteur de dosages
     Eigen::Map<Eigen::VectorXd> SNP(&dosage[0], dosage.size());
@@ -68,6 +75,8 @@ List GWAS_dosage_lm_quanti(CharacterVector filename, NumericVector Y, NumericMat
   L["pos"] = wrap(POS);
   L["A1"] = wrap(AL1);
   L["A2"] = wrap(AL2);
+  L["freq1"] = wrap(F1);
+  L["freq2"] = wrap(F2);
   L["beta"] = beta;
   L["sd"] = sd_beta;
   return L;
