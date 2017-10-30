@@ -14,7 +14,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
   if(missing(X)) X <- rep(1, nb.inds); # intercept 
   X <- as.matrix(X)
   if(nrow(X) != nb.inds) stop("Dimensions of Y and #individuals in ", filename, " mismatch")
-  X <- checkX(X, mean(Y))
+  X <- gaston:::checkX(X, mean(Y))
 
   response <- match.arg(response)
   test <- match.arg(test)
@@ -109,17 +109,4 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
   data.frame( t )
 }
 
-
-checkX <- function(X, mean.y) {
-  X1 <- cbind(1,X)
-  n <- ncol(X1)
-  a <- crossprod(X1)
-  b <- a[ 2:n, 2:n, drop = FALSE ]
-  if( abs(det(b)) < 1e-4 ) stop("Covariate matrix is (quasi) singular")
-  if( abs(det(a)) > 1e-4 & mean.y > 1e-4) {
-    warning("An intercept column was added to the covariate matrix X")
-    return(X1)
-  }
-  return(X)
-}
 
