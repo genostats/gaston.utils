@@ -26,6 +26,7 @@ List read_dose_file(CharacterVector filename) {
   L["pos"] = wrap(POS);
   L["A1"] = wrap(AL1);
   L["A2"] = wrap(AL2);
+  if(in.type == 10) L["samples"] = wrap(in.samples); // VCF
   NumericVector dos = wrap(dosage);
   dos.attr("dim") = Dimension( dosage.size()/POS.size(), POS.size() );
   L["dosages"] = dos;

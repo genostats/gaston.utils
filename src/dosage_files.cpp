@@ -25,6 +25,8 @@ dosages::~dosages() {
   in.close();
 }
 
+// se met en début de fichier 
+// initialise le vectuer samples quand c'est un VCF
 void dosages::start() {
   if(!in.good()) 
     stop("Can't open file");
@@ -37,7 +39,10 @@ void dosages::start() {
     // skip description informations
     while(std::getline(in, line)) {
     if(line.substr(0,1) != "#") stop("Bad VCF format");
-      if(line.substr(0,2) != "##") break; // fin
+      if(line.substr(0,2) != "##") {
+        read_vcf_samples(line, samples);
+        break; // fin
+      }
     }
     // read first data line
     if(std::getline(in, line)) 

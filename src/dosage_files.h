@@ -15,7 +15,8 @@ public:
   std::string line;
   int type;
   bool good;
-  
+  std::vector<std::string> samples; //sera rempli pour les VCF
+
   dosages(std::string file);
   dosages(const char * file);
   dosages(const CharacterVector Filename);

@@ -1,4 +1,4 @@
-# this is just a test for reading a .dose file
+# this is just a test for reading a .dose file (or dosages in a VCF)
 read.dosage.file <- function(x) {
   x <- path.expand(x)
   .Call('zz_read_dose_file', PACKAGE = "gaston.utils", x)

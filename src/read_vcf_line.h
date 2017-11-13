@@ -36,4 +36,6 @@ bool read_vcf_line_dosages(igzstream & in, std::vector<scalar_t> & dosage, std::
   parse_vcf_line_dosages<scalar_t>(line, dosage, snp_id, snp_pos, chr, A1, A2);
   return true;
 }
+
+void read_vcf_samples(std::string line, std::vector<std::string> & samples);
 #endif
