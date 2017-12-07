@@ -17,3 +17,5 @@ export(association.test.parallel)
 export(association.test.dosage, association.test.dosage.parallel)
 export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)
 
+# Hash tables for SNP
+export(SNP.duplicated, SNP.match)
