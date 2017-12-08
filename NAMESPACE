@@ -22,3 +22,6 @@ export(lmm.restricted.likelihood, lmm.profile.restricted.likelihood)
 
 # Hash tables for SNP
 export(SNP.duplicated, SNP.match)
+
+# new rbind function
+exportMethods(rbind)
