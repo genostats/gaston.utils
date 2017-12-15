@@ -9,7 +9,6 @@ using namespace Rcpp;
 // * tous les data frames ont des composantes A1 et A2
 // * il n'y a que des allèles A C G T
 List alleles_recoding(List L) {
-  Rcout << "Determine allele recodings with new function\n";
   int s = L.size();
   if(s < 2) stop("Can't bind less than two matrices!");
   DataFrame first = as<DataFrame> (L[0]);
