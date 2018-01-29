@@ -17,11 +17,3 @@ export(association.test.parallel)
 export(association.test.dosage, association.test.dosage.parallel)
 export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)
 
-# to compute restricted likelihood and profile restricted likelihood
-export(lmm.restricted.likelihood, lmm.profile.restricted.likelihood)
-
-# Hash tables for SNP
-export(SNP.duplicated, SNP.match)
-
-# rbind / cbind methods
-exportMethods(rbind, cbind)
