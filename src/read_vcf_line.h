@@ -26,7 +26,6 @@ void parse_vcf_line_dosages(std::string line, std::vector<scalar_t> & dosage, st
   }
 }
 
-
 template<typename scalar_t> 
 bool read_vcf_line_dosages(igzstream & in, std::vector<scalar_t> & dosage, std::string & snp_id,
                      int & snp_pos, std::string & chr, std::string & A1, std::string & A2) {
