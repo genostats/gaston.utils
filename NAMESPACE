@@ -13,6 +13,9 @@ export(read.bed.matrix.part)
 export(nb.snps)
 export(association.test.parallel)
 
+# modifs en cours (dominance pour le score...)
+export(association.test)
+
 # to deal with impute2 files
 export(association.test.dosage, association.test.dosage.parallel)
 export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)

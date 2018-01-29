@@ -40,5 +40,5 @@ association.test.1 <- function(basename, Y, X, method = c("lm", "lmm"), response
   arg$beg <- arg$end <- NULL
   arg$basename <- NULL
   arg$x <- x
-  do.call(gaston::association.test, arg)
+  do.call(association.test, arg)
 }
