@@ -1,9 +1,24 @@
-read.vcf <- function(file, get.info = FALSE, convert.chr = TRUE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
-  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info)
+  if(missing(chr)) {
+    chr <- ""
+    low <- high <- 0;
+  } else {
+    chr <- as.character(chr)
+    if(missing(range))
+      low <- high <- -1
+    else {
+      low <- range[1]
+      high <- range[2]
+      if(low > high) 
+        stop("Bad range")
+    }
+  }
 
-  snp <- data.frame(chr = L$chr, id = L$id, dist = 0, pos = L$pos , A1 = L$A1, A2 = L$A2,
+  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high)
+
+  snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
                     quality = L$quality, filter = factor(L$filter), stringsAsFactors = FALSE)
 
   if(get.info) {

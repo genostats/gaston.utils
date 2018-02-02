@@ -94,18 +94,17 @@ inline int geno_conv(std::string s) {
 } 
 
 //[[Rcpp::export]]
-List read_vcf_chr_range(CharacterVector filename, bool get_info) {
+List read_vcf_chr_range(std::string filename, bool get_info, std::string chr0, int low, int high) {
   // open file
-  if(filename.length() != 1) stop("filename should be a CharacterVector of length 1");
-  igzstream in( (char *) filename[0] );
+  igzstream in( filename.c_str() );
   if(!in.good()) stop("Can't open file");
 
   // read header
   std::vector<std::string> samples_, format_ids, info_ids;
   read_vcf_header(in, samples_, format_ids, info_ids);
 
-  for(auto i: format_ids) Rcout << i << "\n";
-  for(auto i: info_ids) Rcout << i << "\n";
+  // for(auto i: format_ids) Rcout << i << "\n";
+  // for(auto i: info_ids) Rcout << i << "\n";
 
   CharacterVector samples = wrap(samples_);
   int nsamples = samples.length();
@@ -131,7 +130,18 @@ List read_vcf_chr_range(CharacterVector filename, bool get_info) {
 
     std::vector<std::string> genotypes;
     parse_vcf_line_genotypes(line, genotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_);
-      
+ 
+    if(chr0 != "") { // there's a chr condition
+      Rcout << "(" << chr0 << ")(" << chr_ << ") -> " << chr0.compare(chr_) << "\n";
+      if(chr0.compare(chr_)) // -> if this is different
+        continue; // skip
+      // note : high < 0 implies no range condition
+      // take care of that in R code
+      Rcout << "pos_ = " << pos_ << "\n";
+      if(high > 0 && (pos_ < low || pos_ > high))
+        continue; // skip
+    }
+
     if(genotypes.size() != nsamples)
       Rf_error("VCF format error while reading SNP %s chr = %s pos %d", id_.c_str(), chr_.c_str(), pos_);
 
@@ -190,14 +200,16 @@ List read_vcf_chr_range(CharacterVector filename, bool get_info) {
   return L;
 }
 
-RcppExport SEXP gg_read_vcf_chr_range(SEXP filenameSEXP, SEXP get_infoSEXP) {
+RcppExport SEXP gg_read_vcf_chr_range(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chr0SEXP, SEXP lowSEXP, SEXP highSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< CharacterVector >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
     Rcpp::traits::input_parameter< bool >::type get_info(get_infoSEXP);
-    rcpp_result_gen = Rcpp::wrap(read_vcf_chr_range(filename, get_info));
+    Rcpp::traits::input_parameter< std::string >::type chr0(chr0SEXP);
+    Rcpp::traits::input_parameter< int >::type low(lowSEXP);
+    Rcpp::traits::input_parameter< int >::type high(highSEXP);
+    rcpp_result_gen = Rcpp::wrap(read_vcf_chr_range(filename, get_info, chr0, low, high));
     return rcpp_result_gen;
 END_RCPP
 }
-
