@@ -6,6 +6,8 @@
 #include <fstream>
 #include "gzstream.h"
 #include "read_vcf_line.h"
+#include "token.h"
+#include "default_value.h"
 
 using namespace Rcpp;
 
@@ -15,13 +17,56 @@ void set(uint8_t * data, size_t j, uint8_t val) {
   a |= (val << ((j%4)*2)); // set to val
 }
 
+void read_vcf_header(igzstream & in, std::vector<std::string> & samples, std::vector<std::string> & format_ids, std::vector<std::string> & info_ids) {
+  // skip header and read samples
+  std::string line, id;
+  if(!std::getline(in, line))
+    stop("File is empty");
+
+  while(std::getline(in, line)) {
+    if(line.substr(0,1) != "#") stop("Bad VCF format");
+    if(line.substr(0,2) == "##") {
+      if(line.substr(0,11) == "##INFO=<ID=") {
+        std::istringstream li(line);
+        std::getline(li, id, ',');
+        info_ids.push_back(id.substr(11));
+      }
+      if(line.substr(0,13) == "##FORMAT=<ID=") {
+        std::istringstream li(line);
+        std::getline(li, id, ',');
+        format_ids.push_back(id.substr(13));
+      }
+    } else {
+      read_vcf_samples(line, samples);
+      break; // fin
+    }
+  }
+}
+
+template<typename T>
+void do_get_info(std::string & info, std::string & key, T & value) {
+  Rcout << "info = " << info << "\n";
+  Rcout << "key = " << key << "\n";
+  size_t start = info.find(key+"=");
+  if(start == info.npos) return;
+  std::string s = info.substr(start + key.length() + 1);
+  Rcout << "s = " << s << "\n";
+  std::istringstream is(s);
+  std::string val;
+  std::getline(is, val, ';');
+  Rcout << "val = " << val << "\n";
+  value = sto<T>(val);
+}
+
 void parse_vcf_line_genotypes(std::string line, std::vector<std::string> & genotypes, std::string & snp_id,
-                     int & snp_pos, std::string & chr, std::string & A1, std::string & A2, double & qual,
+                     int & snp_pos, std::string & chr, std::string & A1, std::string & A2, std::string & qual,
                      std::string & filter, std::string & info) {
   std::istringstream li(line);
   std::string format;
-  if(!(li >> chr >> snp_pos >> snp_id >> A1 >> A2 >> qual >> filter >> info >> format))
+  if(!(li >> chr >> snp_pos >> snp_id >> A1 >> A2 >> qual >> filter >> info >> format)) {
+    Rcerr << line;
     stop("VCF file format error");
+  }
   
   int pos = token_position(format, "GT");
   if(pos == 120) stop("bite");
@@ -55,27 +100,22 @@ List read_vcf_chr_range(CharacterVector filename, bool get_info) {
   igzstream in( (char *) filename[0] );
   if(!in.good()) stop("Can't open file");
 
-  // skip header and read samples
-  std::string line;
-  if(!std::getline(in, line))
-    stop("File is empty");
+  // read header
+  std::vector<std::string> samples_, format_ids, info_ids;
+  read_vcf_header(in, samples_, format_ids, info_ids);
 
-  std::vector<std::string> samples_;
-  while(std::getline(in, line)) {
-    if(line.substr(0,1) != "#") stop("Bad VCF format");
-    if(line.substr(0,2) != "##") {
-      read_vcf_samples(line, samples_);
-      break; // fin
-    }
-  }
+  for(auto i: format_ids) Rcout << i << "\n";
+  for(auto i: info_ids) Rcout << i << "\n";
 
   CharacterVector samples = wrap(samples_);
   int nsamples = samples.length();
 
   List L;
-  std::vector<std::string> chr, id, ref, alt, filter, info;
+  std::vector<std::string> chr, id, ref, alt, filter, qual;
   std::vector<int> pos;
-  std::vector<double> qual;
+  std::vector<std::vector<float>> INFO(info_ids.size());
+
+  //  std::vector<double> qual;
 
   XPtr<matrix4> pX(new matrix4(0, nsamples));  // avec nrow = 0 allocations() n'est pas appelé
 
@@ -83,10 +123,11 @@ List read_vcf_chr_range(CharacterVector filename, bool get_info) {
   uint8_t * data_;
 
   int i = 0;
+  std::string line;
   while(std::getline(in, line)) {
     int pos_ = 0;
-    std::string chr_, id_("(no SNP read yet)"), ref_, alt_, filter_, info_;
-    double qual_;
+    std::string chr_, id_("(no SNP read yet)"), ref_, alt_, filter_, info_, qual_;
+    // double qual_;
 
     std::vector<std::string> genotypes;
     parse_vcf_line_genotypes(line, genotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_);
@@ -103,7 +144,14 @@ List read_vcf_chr_range(CharacterVector filename, bool get_info) {
     qual.push_back(qual_); 
     filter.push_back(filter_);
 
-    if(get_info) info.push_back(info_);
+    if(get_info) {
+      for(int k = 0; k < info_ids.size(); k++) {
+        float v = default_value<float>();
+        do_get_info<float>(info_, info_ids[k], v);
+        INFO[k].push_back(v);
+      }
+    }
+
     // nouvelle ligne de données    
     data_ = new uint8_t [pX->true_ncol];
     std::fill(data_, data_ + pX->true_ncol, 255); // c'est important de remplir avec 3 -> NA
@@ -132,10 +180,24 @@ List read_vcf_chr_range(CharacterVector filename, bool get_info) {
   L["A2"] = alt;
   L["quality"] = qual;
   L["filter"] = filter;
-  if(get_info) L["info"] = info;
-
+  if(get_info) {
+    for(int k = 0; k < info_ids.size(); k++) {
+      L[ "info."+info_ids[k] ] = INFO[k];
+    }
+  }
   L["bed"] = pX;
   L["samples"] = samples;
   return L;
+}
+
+RcppExport SEXP gg_read_vcf_chr_range(SEXP filenameSEXP, SEXP get_infoSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< bool >::type get_info(get_infoSEXP);
+    rcpp_result_gen = Rcpp::wrap(read_vcf_chr_range(filename, get_info));
+    return rcpp_result_gen;
+END_RCPP
 }
 
