@@ -20,6 +20,11 @@ int sto<int>(const std::string&x) {
   return std::stoi(x);
 }
 
+template<>
+std::string sto<std::string>(const std::string&x) {
+  return x;
+}
+
 int token_position(std::string s, std::string token) {
   std::istringstream ss(s);
   std::string tok;
@@ -30,5 +35,4 @@ int token_position(std::string s, std::string token) {
   }
   return -1;
 }
-
 
