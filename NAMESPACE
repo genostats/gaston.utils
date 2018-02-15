@@ -26,4 +26,5 @@ export(SNP.duplicated, SNP.match)
 # rbind / cbind methods
 exportMethods(rbind, cbind)
 
-export(read.vcf)
+export(read.vcf.1)
+export(read.ld.score)
