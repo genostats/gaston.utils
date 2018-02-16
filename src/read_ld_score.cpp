@@ -8,8 +8,24 @@
 
 using namespace Rcpp;
 
-//[[Rcpp::export]]
-DataFrame read_all(std::string filename) {
+class snp_filter {
+  public:
+  virtual bool operator()(int chr, std::string snp, int bp, double cm) {
+    return true;
+  }
+};
+
+class snp_filter_by_chr_pos : public snp_filter {
+  SNPhash H;
+  public:
+  snp_filter_by_chr_pos(IntegerVector CHR, IntegerVector POS) : H(CHR, POS) { }
+  bool operator()(int chr, std::string snp, int bp, double cm) {
+    int a = H.lookup(chr, bp);
+    return (a != NA_INTEGER);
+  }
+};
+
+List read_ld_score_filtered(std::string filename, snp_filter & F) {
   // open file
   igzstream in( filename.c_str() );
   if(!in.good()) stop("Can't open file");
@@ -45,15 +61,17 @@ DataFrame read_all(std::string filename) {
        Rcerr << "line : [" << line << "]\n"; 
        stop("Format error\n");
      }
-     CHR.push_back(chr);
-     SNP.push_back(snp);
-     BP.push_back(bp);
-     CM.push_back(cm);
-     MAF.push_back(maf);
-     L2.push_back(l2);   
+     if(F(chr, snp, bp, cm)) {
+       CHR.push_back(chr);
+       SNP.push_back(snp);
+       BP.push_back(bp);
+       CM.push_back(cm);
+       MAF.push_back(maf);
+       L2.push_back(l2);   
+     }
    }
 
-   DataFrame D;
+   List D;
    D["CHR"] = wrap(CHR);
    D["SNP"] = wrap(SNP);
    D["BP"]  = wrap(BP);
@@ -64,14 +82,31 @@ DataFrame read_all(std::string filename) {
    return D;
 }
 
+//[[Rcpp::export]]
+List read_ld_score_filt(std::string filename, IntegerVector CHR, IntegerVector POS) {
+  snp_filter_by_chr_pos F(CHR, POS);
+  return read_ld_score_filtered(filename, F);
+}
 
-RcppExport SEXP read_all(SEXP filenameSEXP) {
+RcppExport SEXP read_ld_score_all(SEXP filenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
-    rcpp_result_gen = Rcpp::wrap(read_all(filename));
+    snp_filter all;
+    rcpp_result_gen = Rcpp::wrap(read_ld_score_filtered(filename, all));
     return rcpp_result_gen;
 END_RCPP
 }
 
+RcppExport SEXP read_ld_score_filt(SEXP filenameSEXP, SEXP CHRSEXP, SEXP POSSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type CHR(CHRSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type POS(POSSEXP);
+    rcpp_result_gen = Rcpp::wrap(read_ld_score_filt(filename, CHR, POS));
+    return rcpp_result_gen;
+END_RCPP
+}
