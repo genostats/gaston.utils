@@ -21,4 +21,4 @@ export(association.test.dosage, association.test.dosage.parallel)
 export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)
 
 export(read.vcf.1)
-export(read.ld.score)
+export(read.ld.score, read.snp.list)
