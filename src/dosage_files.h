@@ -6,6 +6,8 @@
 #include "read_gen_line.h"
 #include "read_vcf_line.h"
 
+enum dosage_type {VCF, Impute2, PES};
+
 using namespace Rcpp;
 
 class dosages {
@@ -13,7 +15,7 @@ public:
   std::string filename;
   igzstream in;
   std::string line;
-  int type;
+  dosage_type type;
   bool good;
   std::vector<std::string> samples; //sera rempli pour les VCF
 
