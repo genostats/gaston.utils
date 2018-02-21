@@ -9,7 +9,7 @@ using namespace Rcpp;
 CharacterVector flip_strand(CharacterVector Allele) {
   std::vector<std::string> R;
   for(auto x : Allele) {
-    R.push_back( flip_strand( CHAR(x) );
+    R.push_back( flip_strand( CHAR(x) ) );
   }
   return wrap(R);
 }
