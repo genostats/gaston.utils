@@ -1,6 +1,7 @@
 association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), response = c("quantitative", "binary"), 
                                     test = c("score", "wald", "lrt"), K, eigenK, beg, end, p = 0, 
                                     tol = .Machine$double.eps^0.25, ...) {
+  filename <- path.expand(filename)
   dims <- dim.dosage.file(filename)
   nb.inds <- dims[1]
   nb.snps <- dims[2]

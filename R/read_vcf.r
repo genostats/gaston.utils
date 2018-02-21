@@ -1,4 +1,4 @@
-read.vcf <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf.1 <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
   if(missing(chr)) {
