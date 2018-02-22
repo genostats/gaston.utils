@@ -20,7 +20,7 @@ List read_dose_file(CharacterVector filename) {
     if(nb_ind < 0) {
       nb_ind = dos_le - last_dos_le;
     } else if(nb_ind != dos_le - last_dos_le) {
-      Rcerr << "While reading SNP #" << snp_id.size()+1 << " with id = " << snp_id << "\n";
+      Rcerr << "While reading SNP #" << POS.size()+1 << " with id = " << snp_id << "\n";
       Rcerr << "Read " << dos_le - last_dos_le << " dosages, instead of " << nb_ind << " on previous line(s)\n";
       stop("File format error");
     }
