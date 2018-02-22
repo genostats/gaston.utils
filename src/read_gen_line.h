@@ -2,6 +2,8 @@
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"
+#include "token.h"
+#include <algorithm>
 #ifndef GASTONread_gen_line
 #define GASTONread_gen_line
 using namespace Rcpp;
@@ -37,8 +39,24 @@ inline void parse_gen_line_pes(std::string line, std::vector<scalar_t> & dosage,
   if(!(li >> snp_id >> snp_chr >> snp_pos >> A1 >> A2))
     stop("gen file format error");
   scalar_t dose;
+  /* version simple, qui ne prend pas en compte la possibilité d'avoir des NA 
   while(li >> dose)
     dosage.push_back(dose);
+  */
+  scalar_t somme(0);
+  int n(0);
+  std::string tok;
+  while(li >> tok) {
+    if(tok == "NA") {
+      dosage.push_back(-1.0);
+    } else {
+      dose = sto<scalar_t>(tok);
+      dosage.push_back(dose);
+      somme += dose;
+      n++;
+    }
+  }
+  std::replace(dosage.begin(), dosage.end(), (scalar_t) -1.0, somme/n);
 }
 
 template<typename scalar_t>

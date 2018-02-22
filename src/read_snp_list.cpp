@@ -33,7 +33,7 @@ List read_snp_list_filtered(std::vector<std::string> Filenames, snp_filter & F) 
      std::string snp, a1, a2;
   
      while(std::getline(in, line)) {
-       li = std::istringstream(line);
+       std::istringstream li(line);
        if(!(li >> snp >> a1 >> a2)) {
          Rcerr << "last read line : [" << line << "]\n"; 
          stop("Format error in file "+file);
