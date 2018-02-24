@@ -3,3 +3,5 @@ CXX_STD = CXX11
 
 # link zlib
 PKG_LIBS = -lz	
+
+PKG_CPPFLAGS = -Wno-logical-op-parentheses

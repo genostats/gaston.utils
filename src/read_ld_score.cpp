@@ -43,7 +43,7 @@ List read_ld_score_filtered(std::vector<std::string> Filenames, snp_filter & F) 
   
      while(std::getline(in, line)) {
        total_nb_snps++;
-       li = std::istringstream(line);
+       std::istringstream li(line);
        if(!(li >> chr >> snp >> bp >> cm >> maf >> l2)) {
          Rcerr << "last read line : [" << line << "]\n"; 
          stop("Format error in file "+file);

@@ -22,3 +22,4 @@ export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)
 
 export(read.vcf.1)
 export(read.ld.score, read.snp.list)
+export(flip.strand, check.alleles)

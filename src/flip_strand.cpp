@@ -5,7 +5,7 @@
 
 using namespace Rcpp;
 
-
+//[[Rcpp::export]]
 CharacterVector flip_strand(CharacterVector Allele) {
   std::vector<std::string> R;
   for(auto x : Allele) {
@@ -13,3 +13,11 @@ CharacterVector flip_strand(CharacterVector Allele) {
   }
   return wrap(R);
 }
+
+RcppExport SEXP gg_flip_strand(SEXP AlleleSEXP) {
+BEGIN_RCPP
+    Rcpp::traits::input_parameter< CharacterVector >::type Allele(AlleleSEXP);
+    return flip_strand(Allele);
+END_RCPP
+}
+
