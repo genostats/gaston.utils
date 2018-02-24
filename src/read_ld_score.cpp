@@ -13,7 +13,7 @@ List read_ld_score_filtered(std::vector<std::string> Filenames, snp_filter & F) 
   std::vector<std::string> SNP;
   std::vector<double> CM, MAF, L2;
  
-  int total_nb_snps;
+  int total_nb_snps(0);
 
   for(std::string file : Filenames) {
     // open file
