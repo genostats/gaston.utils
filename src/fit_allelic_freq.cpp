@@ -141,7 +141,6 @@ NumericVector fst(XPtr<matrix4> pA, NumericVector p, arma::mat & x,
     // ------
     arma::uvec uvec_indices( &indices[0], indices.size(), false, true); // vector uvec sans copie de la mémoire
     my_logistic_model(y.rows(uvec_indices), x.rows(uvec_indices), tol, beta, W, varbeta);
-    if(i == 0) Rcout << W.t() << "\n";
     FST(i-beg) = 1.0 - mean(W)/(p(i)*(1-p(i)));
   }
   return FST;
