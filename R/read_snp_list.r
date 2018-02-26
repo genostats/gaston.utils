@@ -4,5 +4,5 @@ read.snp.list  <- function(filename, id) {
   else 
     D <- .Call("read_snp_list_filt_id", PACKAGE = "gaston.utils", filename, id)
 
-  data.frame(D)
+  data.frame(D, stringsAsFactors = FALSE)
 }

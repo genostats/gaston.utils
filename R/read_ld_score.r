@@ -8,5 +8,5 @@ read.ld.score  <- function(filename, id, chr, pos) {
 
   total.nb.snps <- D$total_nb_snps
   D$total_nb_snps <- NULL
-  list( total.nb.snps = total.nb.snps, ld.scores = data.frame(D) )
+  list( total.nb.snps = total.nb.snps, ld.scores = data.frame(D, stringsAsFactors = FALSE) )
 }
