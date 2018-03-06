@@ -1,7 +1,7 @@
 # required by  RcppParallel
 CXX_STD = CXX11 
 
-# link zlib
-PKG_LIBS = -lz	
+# link zlib and Lapack (RcppArmadillo) + openmp pour RcppArmadillo aussi
+PKG_LIBS = -lz	$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -fopenmp
 
-PKG_CPPFLAGS = -Wno-logical-op-parentheses
+PKG_CPPFLAGS = -fopenmp
