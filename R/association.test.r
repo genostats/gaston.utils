@@ -56,9 +56,9 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
           X <- cbind(X, eigenK$vectors[,seq_len(p)])
         model <- lmm.aireml(Y, X = X, K, get.P = TRUE, ... )
         if(dominance) 
-          t <- .Call("gg_dominant_GWAS_lmm_score_f", PACKAGE = "gaston.utils", x@bed, model$Py, model$P, x@p, beg-1, end-1)
+          t <- .Call("gg_dominant_GWAS_lmm_score_bed", PACKAGE = "gaston.utils", x@bed, model$Py, model$P, x@p, beg-1, end-1)
         else
-          t <- .Call("gg_GWAS_lmm_score_f", PACKAGE = "gaston.utils", x@bed, model$Py, model$P, x@p, beg-1, end-1)
+          t <- .Call("gg_GWAS_lmm_score_bed", PACKAGE = "gaston.utils", x@bed, model$Py, model$P, x@p, beg-1, end-1)
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE)
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
@@ -78,9 +78,9 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
         if (!is.null(X)) omega <- omega + X%*%model$BLUP_beta
         pi <- 1/(1+exp(-omega))
         if(dominance)
-          t <- .Call("gg_dominant_GWAS_lmm_score_f", PACKAGE = "gaston.utils", x@bed, Y-pi, model$P, x@p, beg-1, end-1)
+          t <- .Call("gg_dominant_GWAS_lmm_score_bed", PACKAGE = "gaston.utils", x@bed, Y-pi, model$P, x@p, beg-1, end-1)
         else
-          t <- .Call("gg_GWAS_lmm_score_f", PACKAGE = "gaston.utils", x@bed, Y-pi, model$P, x@p, beg-1, end-1)
+          t <- .Call("gg_GWAS_lmm_score_bed", PACKAGE = "gaston.utils", x@bed, Y-pi, model$P, x@p, beg-1, end-1)
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE) 
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
