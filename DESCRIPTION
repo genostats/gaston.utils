@@ -8,6 +8,6 @@ Author: Hervé Perdry
 Maintainer: Hervé Perdry <herve.perdry@u-psud.fr>
 Description: Miscellaneous functions to use with Gaston
 License: GPL-3
-LinkingTo: Rcpp, RcppEigen, gaston, RcppArmadillo
+LinkingTo: Rcpp, RcppEigen, gaston, RcppArmadillo, RcppParallel
 Depends: R.utils, Rcpp, parallel, gaston (>= 1.5.3)
 NeedsCompilation: yes
