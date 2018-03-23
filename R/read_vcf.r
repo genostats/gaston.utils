@@ -5,7 +5,7 @@ read.vcf.1 <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, v
     chr <- ""
     low <- high <- 0;
   } else {
-    chr <- as.character(chr)
+#    chr <- as.character(chr)
     if(missing(range))
       low <- high <- -1
     else {
@@ -16,6 +16,7 @@ read.vcf.1 <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, v
     }
   }
 
+  set.chr.ids()
   L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high)
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,

@@ -12,7 +12,7 @@ template<typename T>
 T sto(const std::string & x);
 
 template<typename T>
-T token_at_position(std::string s, int pos) {
+T token_at_position(std::string & s, int pos) {
   std::istringstream ss(s);
   std::string token;
   for(int i = 0; i < pos && std::getline(ss, token, ':'); i++) {}
