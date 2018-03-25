@@ -52,6 +52,14 @@ class stringstream_lite {
     return *this;
   } 
 
+  stringstream_lite & operator>>(double & x) {
+    token_length = next_token();
+    if(token_length > 0) {
+      x = atof(token);
+    }
+    return *this;
+  } 
+
   operator bool() { 
     return !eof;
   }

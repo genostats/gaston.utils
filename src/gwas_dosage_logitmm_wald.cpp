@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <string>
 #include "gaston.h"
 #include <iostream>
 #include <fstream>

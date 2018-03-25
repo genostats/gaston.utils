@@ -1,5 +1,7 @@
 #include <string>
 
+#ifndef STRING_EQUAL
+#define STRING_EQUAL
 inline bool string_equal(SEXP a, SEXP b) {
   return !(std::strcmp(CHAR(a), CHAR(b)));
 }
@@ -11,6 +13,7 @@ inline bool string_equal(char * a, SEXP b) {
 inline bool string_equal(std::string & a, SEXP b) {
   return (a == CHAR(b));
 }
+#endif
 
 /*
 bool string_equal(std::string & a, std::string & b) {

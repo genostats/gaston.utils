@@ -1,5 +1,6 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
+#include <string>
 #include <fstream>
 #include "gzstream.h"
 #include "dosage_files.h"

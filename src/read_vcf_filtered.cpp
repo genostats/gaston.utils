@@ -76,10 +76,10 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
   if(FILENAMES.size() < 1)
     stop("Empty Filenames vector");
 
-//  std::vector<std::string> chr, id, ref, alt, filter, qual;
-//  std::vector<int> pos;
-  std::vector<std::string> id, ref, alt, filter, qual;
+  std::vector<std::string> id, ref, alt, filter;
   std::vector<int> pos, chr;
+  std::vector<double> qual;
+
   std::vector<std::string> SAMPLES, FORMAT_IDS, INFO_IDS;
 
   // ***** begin to read first file ... ***************
@@ -127,15 +127,12 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
     std::string line;
     while(std::getline(in, line)) {
       int pos_ = 0;
-//      std::string chr_, id_("(no SNP read yet)"), ref_, alt_, filter_, info_, qual_;
-      std::string id_("(no SNP read yet)"), ref_, alt_, filter_, info_, qual_;
+      std::string id_("(no SNP read yet)"), ref_, alt_, filter_, info_;
       int chr_;
+      double qual_;
 
       std::vector<int> genotypes;
-      parse_vcf_line_genotypes(line, genotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_);
-
-      //if(!FILTER(sto<int>(chr_), id_, pos_)) 
-      if(!FILTER(id_, chr_, pos_)) 
+      if(!parse_vcf_line_genotypes_filtered(line, genotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_, FILTER))
         continue; // skip
 
       if(genotypes.size() != nsamples)

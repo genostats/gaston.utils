@@ -6,6 +6,9 @@
 #include "read_gen_line.h"
 #include "read_vcf_line.h"
 
+#ifndef DOSAGES
+#define DOSAGES
+
 enum dosage_type {VCF, Impute2, PES};
 
 using namespace Rcpp;
@@ -36,4 +39,7 @@ public:
                      int & snp_pos, std::string & chr, std::string & A1, std::string & A2);
 
 };
+
+#endif
+
 

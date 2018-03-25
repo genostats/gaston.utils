@@ -2,6 +2,9 @@
 #include <RcppEigen.h>
 #include "snp_filler.h"
 
+#ifndef GWAS_LMM_SCORE
+#define GWAS_LMM_SCORE
+
 template<typename scalar_t>
 using MATRIX = Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic>;
 
@@ -56,3 +59,4 @@ class gwas_lmm_score {
   }
 };
 
+#endif

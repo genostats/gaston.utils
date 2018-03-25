@@ -1,4 +1,5 @@
 #include "snp_filter.h"
+#include <string>
 
 using namespace Rcpp;
 

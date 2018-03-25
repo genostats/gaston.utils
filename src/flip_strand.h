@@ -1,3 +1,7 @@
+#include<string>
+
+#ifndef FLIP_STRAND
+#define FLIP_STRAND
 
 inline char flip_strand(char x) {
   if(x == 'A') return 'T';
@@ -14,4 +18,4 @@ inline std::string flip_strand(const char * str) {
   }
   return s;
 }
-
+#endif

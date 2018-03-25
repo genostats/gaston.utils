@@ -1,4 +1,5 @@
 #include <Rcpp.h>
+#include <string>
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"

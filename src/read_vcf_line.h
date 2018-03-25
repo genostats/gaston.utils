@@ -5,6 +5,7 @@
 #include "token.h"
 #include "stringstream_lite.h"
 #include "chr_convert.h"
+#include "snp_filter.h"
 
 #ifndef GASTONread_vcf_line
 #define GASTONread_vcf_line
@@ -57,7 +58,7 @@ inline scalar_t geno_conv(char * s, int le) {
 // avec chr = string
 template<typename scalar_t>
 void parse_vcf_line_genotypes(std::string line, std::vector<scalar_t> & genotypes, std::string & snp_id,
-                     int & snp_pos, std::string & chr, std::string & A1, std::string & A2, std::string & qual,
+                     int & snp_pos, std::string & chr, std::string & A1, std::string & A2, double & qual,
                      std::string & filter, std::string & info) {
 
   stringstream_lite li(line, 9); // 9 = tab separated
@@ -82,10 +83,10 @@ void parse_vcf_line_genotypes(std::string line, std::vector<scalar_t> & genotype
   }
 }
 
-// avec chr = int
+// idem avec chr = int
 template<typename scalar_t>
 void parse_vcf_line_genotypes(std::string line, std::vector<scalar_t> & genotypes, std::string & snp_id,
-                     int & snp_pos, int & chr, std::string & A1, std::string & A2, std::string & qual,
+                     int & snp_pos, int & chr, std::string & A1, std::string & A2, double & qual,
                      std::string & filter, std::string & info) {
 
   stringstream_lite li(line, 9); // 9 = tab separated
@@ -109,6 +110,40 @@ void parse_vcf_line_genotypes(std::string line, std::vector<scalar_t> & genotype
     scalar_t g = geno_conv<scalar_t>(tok.token, tok.token_length);
     genotypes.push_back(g);
   }
+}
+
+// version 'filtered'
+template<typename scalar_t>
+bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> & genotypes, 
+                     std::string & snp_id, int & snp_pos, int & chr, 
+                     std::string & A1, std::string & A2, double & qual,
+                     std::string & filter, std::string & info, snp_filter & FILTER) {
+
+  stringstream_lite li(line, 9); // 9 = tab separated
+  std::string format, chr_;
+  if(!(li >> chr_ >> snp_pos >> snp_id >> A1 >> A2 >> qual >> filter >> info >> format)) {
+    stop("VCF file format error");
+  }
+  chr = chr_to_int(chr_);
+
+  int pos = token_position(format, "GT");
+  if(pos < 0) stop("VCF error (No 'GT' found)");
+
+  if(!FILTER(snp_id, chr, snp_pos)) 
+    return false;
+
+  while( li.next_token() > 0 ) { // li.token pointe sur une chaîne avec le génotype en position pos
+    stringstream_lite tok(li.token, ':'); // les champs sont séparés par des ':'
+    for(int i = 0; i <= pos; i++) { // <= pos car même si pos = 0 il faut lire un token... 
+      if(tok.next_token() == 0) 
+        stop("VCF file format error");
+    }
+
+    // conversion du token t1 en génotype
+    scalar_t g = geno_conv<scalar_t>(tok.token, tok.token_length);
+    genotypes.push_back(g);
+  }
+  return true;
 }
 
 void read_vcf_samples(std::string line, std::vector<std::string> & samples);
