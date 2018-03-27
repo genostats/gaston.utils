@@ -4,6 +4,7 @@
 #include "gzstream.h"
 #include "token.h"
 #include "read_gen_line.h"
+#include "read_vcf_header.h"
 #include "read_vcf_line.h"
 
 #ifndef DOSAGES
