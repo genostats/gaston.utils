@@ -8,9 +8,12 @@ bool snp_filter::operator()(std::string & snp, int chr, int bp) {
 
   if(t == nofilter || t == range_cm) return true;
 
-  if(t == range_bp) {
+  if(t == chr_filter) 
+    return (chr == chr_);
+
+  if(t == range_bp)
     return( chr == chr_ && low_bp <= bp && bp <= high_bp );
-  }
+ 
 
   // if(!H.m) return true; // empty hash
 
@@ -37,13 +40,15 @@ bool snp_filter::operator()(std::string & snp, int chr, int bp, double cm) {
 
   if(t == nofilter) return true;
 
-  if(t == range_bp) {
-    return( chr == chr_ && low_bp <= bp && bp <= high_bp );
-  }
+  if(t == chr_filter) 
+    return (chr == chr_);
 
-  if(t == range_cm) {
+  if(t == range_bp)
+    return( chr == chr_ && low_bp <= bp && bp <= high_bp );
+ 
+  if(t == range_cm) 
     return( chr == chr_ && low_cm <= cm && cm <= high_cm );
-  }
+ 
 
   // if(!H.m) return true; // empty hash
 
@@ -69,9 +74,12 @@ bool snp_filter::operator()(std::string & snp, int chr, int bp, double cm) {
 bool snp_filter::operator()(int chr, int bp) {
   if(t == nofilter) return true;
 
-  if(t == range_bp) {
+  if(t == chr_filter) 
+    return (chr == chr_);
+
+  if(t == range_bp) 
     return( chr == chr_ && low_bp <= bp && bp <= high_bp );
-  }
+  
   
   if(t != hash) return true;
 

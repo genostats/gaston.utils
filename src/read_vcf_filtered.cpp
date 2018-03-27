@@ -197,8 +197,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type low(lowSEXP);
     Rcpp::traits::input_parameter< int >::type high(highSEXP);
     Rcpp::traits::input_parameter< std::vector<bool> >::type which_samples(which_samples_SXP);
-    snp_filter F(chr, low, high);
-    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+    if(chr < 0) {
+      snp_filter F;
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+    } else if(high < 0) {
+      snp_filter F(chr);
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+    } else {
+      snp_filter F(chr, low, high);
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+    }
     return rcpp_result_gen;
 END_RCPP
 }

@@ -3,11 +3,10 @@ read.vcf.range <- function(file, chr, range, chr.ids, which.samples, get.info = 
 
   if(missing(chr)) {
     chr <- -1L 
-    low <- high <- 0;
+    low <- high <- -1L;
   } else {
     if(missing(range)) {
-      low <- 0
-      high <- Inf
+      low <-high <- -1L;
     } else {
       low <- range[1]
       high <- range[2]

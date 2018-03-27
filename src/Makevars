@@ -2,6 +2,8 @@
 CXX_STD = CXX11 
 
 # link zlib and Lapack (RcppArmadillo) + openmp pour RcppArmadillo aussi
-PKG_LIBS = -lz	$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) -fopenmp
+PKG_LIBS = -lz	$(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS) $(SHLIB_OPENMP_CFLAGS) 
 
-PKG_CPPFLAGS = -fopenmp
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) 
+
+

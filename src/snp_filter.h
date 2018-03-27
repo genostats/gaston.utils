@@ -6,7 +6,7 @@ using namespace Rcpp;
 
 #ifndef SNP_FILTER
 #define SNP_FILTER
-enum filter_type {nofilter, range_bp, range_cm, hash};
+enum filter_type {nofilter, chr_filter, range_bp, range_cm, hash};
 
 class snp_filter {
   SNPhash H;
@@ -19,6 +19,8 @@ class snp_filter {
 
   snp_filter() :
     t(nofilter) {}
+
+  snp_filter(int chr) : chr_(chr), t(chr_filter) {}
 
   snp_filter(int chr, int low, int high) : 
     chr_(chr), low_bp(low), high_bp(high), t(range_bp) {}
