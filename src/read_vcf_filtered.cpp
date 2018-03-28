@@ -159,6 +159,7 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
       data.push_back(data_);
       nb_snps++;
     }
+    in.close();
   }
   
   // et on finit la construction de la matrice
