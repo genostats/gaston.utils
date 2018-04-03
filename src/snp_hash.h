@@ -1,6 +1,7 @@
 //#include <iostream>
 #include <string>
 #include "string_equal.h"
+#include "flip_strand.h"
 
 #ifndef GASTON_SNP_HASH
 #define GASTON_SNP_HASH
@@ -230,6 +231,44 @@ class SNPhash {
     }
     return NA_INTEGER;
   }
+
+  // look up by chr:pos:alleles 
+  // trying strand flip or allele swap
+  template<typename T>
+  inline unsigned int lookup(int c, int p, T AL1, T AL2, bool & flip, bool & swap) const {
+    if(htype != chr_pos_al && htype != snpid_chr_pos_al)
+      return NA_INTEGER;
+    unsigned int ad = hash(32*p + c) ;
+    while(index[ad]) {
+      if( pos[index[ad] - 1] == p && chr[index[ad] -1] == c) {
+        if(string_equal(AL1, A1[index[ad] - 1]) && string_equal(AL2, A2[index[ad] - 1])) {
+          flip = false; 
+          swap = false;
+          return index[ad];
+        }
+        std::string AL1_f = flip_strand(AL1);
+        std::string AL2_f = flip_strand(AL2);
+        if(string_equal(AL1_f, A1[index[ad] - 1]) && string_equal(AL2_f, A2[index[ad] - 1])) {
+          flip = true; 
+          swap = false;
+          return index[ad];
+        }
+        if(string_equal(AL2, A1[index[ad] - 1]) && string_equal(AL1, A2[index[ad] - 1])) {
+          flip = false; 
+          swap = true;
+          return index[ad];
+        }
+        if(string_equal(AL2_f, A1[index[ad] - 1]) && string_equal(AL1_f, A2[index[ad] - 1])) {
+          flip = true; 
+          swap = true;
+          return index[ad];
+        }
+      }
+      ++ad %= m;
+    }
+    return NA_INTEGER;
+  }
+
 
 
   // ---------------- hash functions -------------------------

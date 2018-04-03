@@ -1,4 +1,4 @@
-read.vcf.range <- function(file, chr, range, chr.ids, which.samples, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf <- function(file, chr, range, chr.ids, samples, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
   if(missing(chr)) {
@@ -6,9 +6,9 @@ read.vcf.range <- function(file, chr, range, chr.ids, which.samples, get.info = 
     low <- high <- -1L;
   } else {
     if(missing(range)) {
-      low <-high <- -1L;
+      low <- high <- -1L;
     } else {
-      low <- range[1]
+      low  <- range[1]
       high <- range[2]
       if(low > high) 
         stop("Bad range")
@@ -20,10 +20,10 @@ read.vcf.range <- function(file, chr, range, chr.ids, which.samples, get.info = 
   else
     set.chr.ids(chr.ids)
 
-  if(missing(which.samples)) 
-    which.samples <- logical(0)
+  if(missing(samples)) 
+    samples <- character(0)
 
-  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, which.samples)
+  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, samples)
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
                     quality = L$quality, filter = factor(L$filter), stringsAsFactors = FALSE)

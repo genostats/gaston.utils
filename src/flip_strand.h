@@ -18,4 +18,12 @@ inline std::string flip_strand(const char * str) {
   }
   return s;
 }
+
+inline std::string flip_strand(const SEXP a) {
+  return flip_strand(CHAR(a));
+}
+
+inline std::string flip_strand(const std::string & a) {
+  return flip_strand(a.c_str());
+}
 #endif

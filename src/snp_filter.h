@@ -31,16 +31,23 @@ class snp_filter {
   snp_filter(IntegerVector CHR, IntegerVector POS) : 
     H(CHR, POS), t(hash) {}
 
+  snp_filter(IntegerVector CHR, IntegerVector POS, CharacterVector A1, CharacterVector A2) : 
+    H(CHR, POS, A1, A2), t(hash) {}
+
   snp_filter(CharacterVector ID) : 
     H(ID), t(hash) {}
 
   snp_filter(CharacterVector ID, IntegerVector CHR, IntegerVector POS) : 
     H(ID, CHR, POS), t(hash) {}
 
-  bool operator()(std::string & snp, int chr, int bp);
-  bool operator()(std::string & snp, int chr, int bp, double cm);
+  snp_filter(CharacterVector ID, IntegerVector CHR, IntegerVector POS, CharacterVector A1, CharacterVector A2) : 
+    H(ID, CHR, POS, A1, A2), t(hash) {}
+
+  bool operator()(const std::string & snp, int chr, int bp);
+  bool operator()(const std::string & snp, int chr, int bp, const std::string & A1, const std::string & A2, bool & swap);
+  bool operator()(const std::string & snp, int chr, int bp, double cm);
   bool operator()(int chr, int bp);
-  bool operator()(std::string & snp);
+  bool operator()(const std::string & snp);
 };
 
 #endif

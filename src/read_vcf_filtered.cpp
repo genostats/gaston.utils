@@ -11,6 +11,8 @@
 #include "snp_filter.h"
 #include "read_vcf_header.h"
 
+#define SHOW(a) Rcout << #a << " = " << a << "\n";
+
 using namespace Rcpp;
 
 void set(uint8_t * data, size_t j, uint8_t val) {
@@ -44,9 +46,30 @@ bool all_equal(std::vector<std::string> a, std::vector<std::string> b) {
   return true;
 }
 
+// on passe par des CharacterVector pour utiliser IndexHash...
+// mais pour la suite je prends des std::vector... (que d'aller-retour)
+void set_which_samples(std::vector<std::string> SAMPLES_, CharacterVector samples, std::vector<bool> & which_samples, std::vector<std::string> & kept) {
+  sugar::IndexHash<STRSXP> H(samples);
+  H.fill();
+  which_samples.resize(0);
+  which_samples.reserve(SAMPLES_.size());
+
+  kept.resize(0);
+  kept.reserve(SAMPLES_.size());
+
+  CharacterVector SAMPLES(wrap(SAMPLES_));
+  for(auto x : SAMPLES) {
+     if(H.contains(x)) {
+       which_samples.push_back(true);
+       kept.push_back(as<std::string>(x));
+     } else
+       which_samples.push_back(false);
+  }
+
+}
 
 //[[Rcpp::export]]
-List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_filter & FILTER, std::vector<bool> which_samples) {
+List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_filter & FILTER, CharacterVector samples) {
 
   if(FILENAMES.size() < 1)
     stop("Empty Filenames vector");
@@ -55,9 +78,9 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
   std::vector<int> pos, chr;
   std::vector<double> qual;
 
-  std::vector<std::string> SAMPLES, FORMAT_IDS, INFO_IDS;
-
-  bool filter_sample = (which_samples.size() > 0);
+  std::vector<std::string> SAMPLES, SAMPLES_kept, FORMAT_IDS, INFO_IDS;
+  std::vector<bool> which_samples;
+  bool filter_sample = (samples.size() > 0);
 
   // ***** begin to read first file ... ***************
   {
@@ -74,15 +97,14 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
 
   // we can create the bed matrix and restart
 
-  int nsamples = SAMPLES.size();
-  if(filter_sample && nsamples != which_samples.size() ) 
-    stop("which_samples vector doesn't match number of samples in VCF file");
-
-  if(filter_sample) { // il faut maintenant compter le nombre de samples effectivement conservés
-    nsamples = 0;
-    for(bool b : which_samples)
-      if(b) nsamples++;
+  // échantillons à lire...
+  if(filter_sample) {
+    set_which_samples(SAMPLES, samples, which_samples, SAMPLES_kept);
+  } else {
+    SAMPLES_kept = SAMPLES;
   }
+
+  int nsamples = SAMPLES_kept.size();
 
   std::vector<std::vector<float>> INFO( INFO_IDS.size() );
 
@@ -97,16 +119,23 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
     if(!in.good()) stop("Can't open file "+filename);
 
     // read header
-    std::vector<std::string> samples_, format_ids, info_ids;
+    std::vector<std::string> samples_, samples_kept, format_ids, info_ids;
     read_vcf_header(in, samples_, format_ids, info_ids);
 
-    // check if samples are the same ..
-    if(!all_equal(SAMPLES, samples_))
-      stop("The samples should be the same in all VCF files");
+    // échantillons à lire...
+    if(filter_sample) {
+      set_which_samples(samples_, samples, which_samples, samples_kept);
+    } else {
+      samples_kept = samples_;
+    }
+
+    // check if samples are the same ...
+    if(!all_equal(SAMPLES_kept, samples_kept))
+      stop("The samples should be the same and in the same order in all VCF files");
 
     // et si on veut les info...
     if(get_info && !all_equal(INFO_IDS, info_ids))
-       stop("With get_info = TRUE, the info IDs should be the same in all VCF files");
+      stop("With get_info = TRUE, the info IDs should be the same in all VCF files");
 
     uint8_t * data_;
 
@@ -182,12 +211,12 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
     }
   }
   L["bed"] = pX;
-  L["samples"] = SAMPLES;
+  L["samples"] = SAMPLES_kept;
   return L;
 }
 
 
-RcppExport SEXP gg_read_vcf_chr_range(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chr0SEXP, SEXP lowSEXP, SEXP highSEXP, SEXP which_samples_SXP) {
+RcppExport SEXP gg_read_vcf_chr_range(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chr0SEXP, SEXP lowSEXP, SEXP highSEXP, SEXP samples_SXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -196,22 +225,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type chr(chr0SEXP);
     Rcpp::traits::input_parameter< int >::type low(lowSEXP);
     Rcpp::traits::input_parameter< int >::type high(highSEXP);
-    Rcpp::traits::input_parameter< std::vector<bool> >::type which_samples(which_samples_SXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
     if(chr < 0) {
       snp_filter F;
-      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
     } else if(high < 0) {
       snp_filter F(chr);
-      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
     } else {
       snp_filter F(chr, low, high);
-      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
     }
     return rcpp_result_gen;
 END_RCPP
 }
 
-RcppExport SEXP gg_read_vcf_chr_pos(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP which_samples_SXP) {
+RcppExport SEXP gg_read_vcf_chr_pos(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP samples_SXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -219,9 +248,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type get_info(get_infoSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSXP);
     Rcpp::traits::input_parameter< IntegerVector >::type pos(posSXP);
-    Rcpp::traits::input_parameter< std::vector<bool> >::type which_samples(which_samples_SXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
     snp_filter F(chr, pos);
-    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, which_samples));
+    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
     return rcpp_result_gen;
 END_RCPP
 }

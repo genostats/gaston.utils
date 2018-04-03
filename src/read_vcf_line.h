@@ -130,8 +130,15 @@ bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> &
   int pos = token_position(format, "GT");
   if(pos < 0) stop("VCF error (No 'GT' found)");
 
-  if(!FILTER(snp_id, chr, snp_pos)) 
+  bool swap = false;
+  if(!FILTER(snp_id, chr, snp_pos, A1, A2, swap)) 
     return false;
+
+  if(swap) {
+    std::string tmp(A1);
+    A1 = A2;
+    A2 = tmp;
+  }
 
   while( li.next_token() > 0 ) { // li.token pointe sur une chaîne avec le génotype en position pos
     stringstream_lite tok(li.token, ':'); // les champs sont séparés par des ':'
@@ -142,7 +149,10 @@ bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> &
 
     // conversion du token t1 en génotype
     scalar_t g = geno_conv<scalar_t>(tok.token, tok.token_length);
-    genotypes.push_back(g);
+    if(swap)
+      genotypes.push_back(2-g);
+    else
+      genotypes.push_back(g);
   }
   return true;
 }
@@ -166,8 +176,15 @@ bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> &
   int pos = token_position(format, "GT");
   if(pos < 0) stop("VCF error (No 'GT' found)");
 
-  if(!FILTER(snp_id, chr, snp_pos)) 
+  bool swap = false;
+  if(!FILTER(snp_id, chr, snp_pos, A1, A2, swap)) 
     return false;
+
+  if(swap) {
+    std::string tmp(A1);
+    A1 = A2;
+    A2 = tmp;
+  }
 
   int k = 0;
   while( li.next_token() > 0 ) { // li.token pointe sur une chaîne avec le génotype en position pos
@@ -180,7 +197,10 @@ bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> &
     if(which_samples[k++]) {
       // conversion du token t1 en génotype
       scalar_t g = geno_conv<scalar_t>(tok.token, tok.token_length);
-      genotypes.push_back(g);
+      if(swap)
+        genotypes.push_back(2-g);
+      else
+        genotypes.push_back(g);
     }
   }
   return true;

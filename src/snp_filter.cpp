@@ -4,7 +4,7 @@
 using namespace Rcpp;
 
 // ------------------------------------------------------------------
-bool snp_filter::operator()(std::string & snp, int chr, int bp) {
+bool snp_filter::operator()(const std::string & snp, int chr, int bp) {
 
   if(t == nofilter || t == range_cm) return true;
 
@@ -36,7 +36,7 @@ bool snp_filter::operator()(std::string & snp, int chr, int bp) {
 }
 
 // ------------------------------------------------------------------
-bool snp_filter::operator()(std::string & snp, int chr, int bp, double cm) {
+bool snp_filter::operator()(const std::string & snp, int chr, int bp, double cm) {
 
   if(t == nofilter) return true;
 
@@ -80,7 +80,6 @@ bool snp_filter::operator()(int chr, int bp) {
   if(t == range_bp) 
     return( chr == chr_ && low_bp <= bp && bp <= high_bp );
   
-  
   if(t != hash) return true;
 
   int a = H.lookup(chr, bp);
@@ -88,7 +87,45 @@ bool snp_filter::operator()(int chr, int bp) {
 }
 
 // ------------------------------------------------------------------
-bool snp_filter::operator()(std::string & snp) {
+// le cas le plus complet... (pour le filtrage des VCF)
+// il faudra compléter pour les divers types de hash... on n'a que chr_pos et chr_pos_al pour le moment
+bool snp_filter::operator()(const std::string & id, int chr, int bp, const std::string & A1, const std::string & A2, bool & swap) {
+
+  swap = false; // le défaut !
+
+  if(t == nofilter) return true;
+
+  if(t == chr_filter) 
+    return (chr == chr_);
+
+  if(t == range_bp) 
+    return( chr == chr_ && low_bp <= bp && bp <= high_bp );
+  
+  if(t != hash) return true;
+
+  if(H.htype == snpid) {
+    int a = H.lookup(id);
+    return (a != NA_INTEGER);
+  }
+
+  if(H.htype == chr_pos) {
+    int a = H.lookup(chr, bp);
+    return (a != NA_INTEGER);
+  }
+  
+  if(H.htype == chr_pos_al) {
+    bool flip;
+    int a = H.lookup(chr, bp, A1, A2, flip, swap);
+    return (a != NA_INTEGER);
+  }
+
+  stop("Wrong hash type !");
+  return false; // ???
+}
+
+
+// ------------------------------------------------------------------
+bool snp_filter::operator()(const std::string & snp) {
  
   if(t != hash) return true;
 
