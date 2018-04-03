@@ -88,10 +88,11 @@ bool snp_filter::operator()(int chr, int bp) {
 
 // ------------------------------------------------------------------
 // le cas le plus complet... (pour le filtrage des VCF)
-// il faudra compléter pour les divers types de hash... on n'a que chr_pos et chr_pos_al pour le moment
-bool snp_filter::operator()(const std::string & id, int chr, int bp, const std::string & A1, const std::string & A2, bool & swap) {
+// il faudra compléter pour les divers types de hash... on n'a que snpid, chr_pos et chr_pos_al pour le moment
+bool snp_filter::operator()(const std::string & id, int chr, int bp, const std::string & A1, const std::string & A2, bool & flip, bool & swap) {
 
   swap = false; // le défaut !
+  flip = false;
 
   if(t == nofilter) return true;
 
@@ -114,7 +115,6 @@ bool snp_filter::operator()(const std::string & id, int chr, int bp, const std::
   }
   
   if(H.htype == chr_pos_al) {
-    bool flip;
     int a = H.lookup(chr, bp, A1, A2, flip, swap);
     return (a != NA_INTEGER);
   }

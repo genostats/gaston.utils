@@ -131,7 +131,7 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
 
     // check if samples are the same ...
     if(!all_equal(SAMPLES_kept, samples_kept))
-      stop("The samples should be the same and in the same order in all VCF files");
+      stop("Samples should be present and in the same order in all VCF files");
 
     // et si on veut les info...
     if(get_info && !all_equal(INFO_IDS, info_ids))
@@ -251,6 +251,23 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type pos(posSXP);
     Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
     snp_filter F(chr, pos);
+    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
+    return rcpp_result_gen;
+END_RCPP
+}
+
+RcppExport SEXP gg_read_vcf_chr_pos_al(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP a1_SXP, SEXP a2_SXP, SEXP samples_SXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type filename(filenameSEXP);
+    Rcpp::traits::input_parameter< bool >::type get_info(get_infoSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type chr(chrSXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type pos(posSXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type a1(a1_SXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type a2(a2_SXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
+    snp_filter F(chr, pos, a1, a2);
     rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
     return rcpp_result_gen;
 END_RCPP

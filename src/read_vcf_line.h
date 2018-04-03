@@ -6,6 +6,7 @@
 #include "stringstream_lite.h"
 #include "chr_convert.h"
 #include "snp_filter.h"
+#include "flip_strand.h"
 
 #ifndef GASTONread_vcf_line
 #define GASTONread_vcf_line
@@ -130,14 +131,18 @@ bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> &
   int pos = token_position(format, "GT");
   if(pos < 0) stop("VCF error (No 'GT' found)");
 
-  bool swap = false;
-  if(!FILTER(snp_id, chr, snp_pos, A1, A2, swap)) 
+  bool swap = false, flip = false;
+  if(!FILTER(snp_id, chr, snp_pos, A1, A2, flip, swap)) 
     return false;
 
   if(swap) {
     std::string tmp(A1);
     A1 = A2;
     A2 = tmp;
+  }
+  if(flip) {
+    A1 = flip_strand(A1);
+    A2 = flip_strand(A2);
   }
 
   while( li.next_token() > 0 ) { // li.token pointe sur une chaîne avec le génotype en position pos
@@ -176,14 +181,18 @@ bool parse_vcf_line_genotypes_filtered(std::string line, std::vector<scalar_t> &
   int pos = token_position(format, "GT");
   if(pos < 0) stop("VCF error (No 'GT' found)");
 
-  bool swap = false;
-  if(!FILTER(snp_id, chr, snp_pos, A1, A2, swap)) 
+  bool swap = false, flip = false;
+  if(!FILTER(snp_id, chr, snp_pos, A1, A2, flip, swap)) 
     return false;
 
   if(swap) {
     std::string tmp(A1);
     A1 = A2;
     A2 = tmp;
+  }
+  if(flip) {
+    A1 = flip_strand(A1);
+    A2 = flip_strand(A2);
   }
 
   int k = 0;

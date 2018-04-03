@@ -44,7 +44,7 @@ class snp_filter {
     H(ID, CHR, POS, A1, A2), t(hash) {}
 
   bool operator()(const std::string & snp, int chr, int bp);
-  bool operator()(const std::string & snp, int chr, int bp, const std::string & A1, const std::string & A2, bool & swap);
+  bool operator()(const std::string & snp, int chr, int bp, const std::string & A1, const std::string & A2, bool & flip, bool & swap);
   bool operator()(const std::string & snp, int chr, int bp, double cm);
   bool operator()(int chr, int bp);
   bool operator()(const std::string & snp);

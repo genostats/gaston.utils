@@ -1,19 +1,10 @@
 read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
-  if(missing(chr)) {
-    chr <- -1L 
-    low <- high <- -1L;
-  } else {
-    if(missing(range)) {
-      low <- high <- -1L;
-    } else {
-      low  <- range[1]
-      high <- range[2]
-      if(low > high) 
-        stop("Bad range")
-    }
-  }
+  if(class(x) == "bed.matrix")
+    x <- x@snps
+  if(class(x) != "data.frame")
+    stop("x should be a bed.matrix or a data frames")
 
   if(missing(chr.ids))
     set.chr.ids() 
@@ -23,7 +14,12 @@ read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples,
   if(missing(samples)) 
     samples <- character(0)
 
-  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, samples)
+  if(by == "chr:pos") 
+    L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
+  else if(by == "chr:pos:alleles")
+    L <- .Call("gg_read_vcf_chr_pos_al", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
+  else
+    stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
                     quality = L$quality, filter = factor(L$filter), stringsAsFactors = FALSE)
