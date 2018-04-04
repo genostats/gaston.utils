@@ -12,7 +12,7 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
   set.chr.ids() 
 
   if(missing(samples)) {
-    if(!missing(population))
+    if(!missing(populations))
       samples <- KG.samples$sample[ KG.samples$population %in% populations ]
     else if(!missing(super.populations))
       samples <- KG.samples$sample[ KG.samples$super.population %in% super.populations ]
