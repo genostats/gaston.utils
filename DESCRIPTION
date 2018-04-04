@@ -11,3 +11,4 @@ License: GPL-3
 LinkingTo: Rcpp, RcppEigen, gaston, RcppArmadillo, RcppParallel
 Depends: R.utils, Rcpp, parallel, gaston (>= 1.5.3)
 NeedsCompilation: yes
+LazyData: true
