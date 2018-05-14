@@ -25,7 +25,7 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
       samples <- character(0)
   }
 
-  if(filter_snps) {
+  if(filter.snps) {
     if(by == "chr:pos") 
       L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
     else if(by == "chr:pos:alleles")
