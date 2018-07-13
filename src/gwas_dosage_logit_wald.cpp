@@ -1,6 +1,7 @@
 #include <Rcpp.h>
+#include <RcppEigen.h>
 #include <string>
-#include "gaston.h"
+#include "gaston/logit.h"
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"
@@ -61,15 +62,21 @@ List GWAS_dosage_logit_wald_f(CharacterVector filename, NumericVector Y, Numeric
     F1.push_back(1.0 - s);
     F2.push_back(s);
 
-    // remplir dernière colonne de x par dosage...
-    for(int ii = 0; ii < n; ii++) x(ii,r-1) = dosage[ii];
+    // remplir dernière colonne de x par dosage (centré)...
+    for(int ii = 0; ii < n; ii++) x(ii,r-1) = dosage[ii] - 2.0*s;
 
     MatrixXf varbeta(r,r);
-    logistic_model_f(y, x, tol, beta, varbeta);
 
-    BETA(i-beg) = beta(r-1);
-    SDBETA(i-beg) = sqrt(varbeta(r-1,r-1));
-
+    // verifier si la matrice est singuliere
+    float d = (x.transpose() * x).determinant();
+    if( d < 1e-4 ) { // seuil très arbitraire (devrait être ok si on a fait la dec QR de X avant)
+      BETA(i - beg) = NAN;
+      SDBETA(i - beg) = NAN;
+    } else {
+      logistic_model_f(y, x, tol, beta, varbeta);
+      BETA(i - beg) = beta(r-1);
+      SDBETA(i - beg) = sqrt(varbeta(r-1,r-1));
+    }
     dosage.clear();
   }
 

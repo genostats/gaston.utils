@@ -71,8 +71,8 @@ List GWAS_dosage_logitmm_wald_f(CharacterVector filename, NumericVector Y, Numer
     F1.push_back(1.0 - s);
     F2.push_back(s);
 
-    // remplir dernière colonne de x par dosage...
-    for(int ii = 0; ii < n; ii++) x(ii,r-1) = dosage[ii];
+    // remplir dernière colonne de x par dosage (centré)...
+    for(int ii = 0; ii < n; ii++) x(ii,r-1) = dosage[ii] - 2.0*s;
 
     // use last computed tau as starting point...
     if( std::isnan(tau) ) tau = 0;

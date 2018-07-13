@@ -64,11 +64,11 @@ void dosages::start() {
   std::vector<std::string> splitted;
   std::string str;
   while(li >> str) splitted.push_back(str);
-  if(splitted.size() < 5 || splitted[0] != "id"  && splitted[0] != "ID"
-                         || splitted[1] != "chr" && splitted[1] != "CHR" 
-                         || splitted[2] != "pos" && splitted[2] != "POS"
-                         || splitted[3] != "A1"  && splitted[3] != "a1" 
-                         || splitted[4] != "A2"  && splitted[4] != "a2") {
+  if(splitted.size() < 5 || (splitted[0] != "id"  && splitted[0] != "ID" )
+                         || (splitted[1] != "chr" && splitted[1] != "CHR") 
+                         || (splitted[2] != "pos" && splitted[2] != "POS")
+                         || (splitted[3] != "A1"  && splitted[3] != "a1" )
+                         || (splitted[4] != "A2"  && splitted[4] != "a2" ) ) {
     in.close();
     stop("Unknown file format");
   }

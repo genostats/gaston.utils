@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include "matrix4.h"
+#include "gaston/matrix4.h"
 #include <fstream>
 #include "gzstream.h"
 

@@ -5,7 +5,7 @@
 #include "gzstream.h"
 #include "dosage_files.h"
 #include <cmath>
-#include "diago2.h"
+#include "gaston/diago2.h"
 
 // laisser en double ça va aussi vite (plus vite ?) et ça fait vraiment
 // une différence si il y a des covariables
