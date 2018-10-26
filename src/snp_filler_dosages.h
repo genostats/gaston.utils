@@ -57,20 +57,20 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
     AL1.push_back(A1);
     AL2.push_back(A2);
 
-    // ajout deux cols fréquences
-    double ss = std::accumulate(dosage.begin(), dosage.end(), 0.0)/dosage.size()/2.0;
+    // ajout deux cols fréquences et remplissage SNP
+    // double ss = std::accumulate(dosage.begin(), dosage.end(), 0.0)/dosage.size()/2.0;
+    scalar_t ss = 0;
+    for(int i = 0; i < nb_snps; i++) {
+       ss += SNP[i] = dosage[i];
+    }
+    ss /= 2.0;
+
     F1.push_back(1.0 - ss);
     F2.push_back(ss);
 
     if(ss < 1.0 || ss > 0.0) {
        this->monorphic = false;
-    } else {
-      return true;
     }
-
-    // remplir SNP à partir du vecteur de dosages
-    // [il faut bien supposer que SNP a la bonne dimension...]
-    std::memcpy(SNP, &dosage[0], nb_snps);
     return true;
   }
 };

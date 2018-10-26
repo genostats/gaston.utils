@@ -7,6 +7,7 @@
 #include "chr_convert.h"
 #include "snp_filter.h"
 #include "flip_strand.h"
+#include "genotype_probas.h"
 
 #ifndef GASTONread_vcf_line
 #define GASTONread_vcf_line
@@ -23,11 +24,24 @@ void parse_vcf_line_dosages(std::string line, std::vector<scalar_t> & dosage, st
     stop("VCF file format error");
   
   int pos = token_position(format, "DS");
-
-  std::string G;
-  while(li >> G) {
-    dosage.push_back( token_at_position<scalar_t>(G, pos) );
+  if(pos != -1) {
+    std::string G;
+    while(li >> G) {
+      dosage.push_back( token_at_position<scalar_t>(G, pos) );
+    }
+    return;
   }
+
+  pos = token_position(format, "GP");
+  if(pos != -1) {
+    std::string G;
+    while(li >> G) {
+      std::string GP( token_at_position<std::string>(G, pos) );
+      dosage.push_back( genotype_probas_to_dosage(GP) );
+    } 
+    return;
+  }
+  stop("No DS / GP field");
 }
 
 template<typename scalar_t> 
