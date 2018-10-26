@@ -36,7 +36,7 @@ class gwas_lmm_score {
 //  virtual bool snp_fill() = 0;
 //  virtual bool current_snp_monomorphic() = 0;
 
-  List run_tests() {
+  void run_tests() {
     std::vector<double> s;
     double t, v;  
     while( S.snp_fill( &SNP[0] ) ) {
@@ -54,8 +54,6 @@ class gwas_lmm_score {
  
     // on ajoute le score dans S.L 
     S.L["score"] = wrap(s);
-
-    return S.L;
   }
 };
 

@@ -106,8 +106,8 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
     if( any(is.na(Y)) ) 
       stop("Can't handle missing data in Y")
     if(response == "quantitative") {
-      t <- .Call("gg_GWAS_lm_quanti", PACKAGE = "gaston", x@bed, x@mu, Y, Q, beg-1, end-1);
-      t$p <- pt( abs(t$beta/t$sd), df = length(Y) - ncol(Q) - 1, lower.tail=FALSE)*2
+      t <- .Call("gg_GWAS_lm_quanti", PACKAGE = "gaston", x@bed, x@mu, Y, X, beg-1, end-1);
+      t$p <- pt( abs(t$beta/t$sd), df = length(Y) - ncol(X) - 1, lower.tail=FALSE)*2
     }
     if(response == "binary") {
       X <- cbind(X,0)

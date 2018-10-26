@@ -5,13 +5,15 @@
 List GWAS_lmm_score_bed(XPtr<matrix4> pA, NumericVector PY, NumericMatrix P, NumericVector p, int beg, int end) {
   snp_filler_additive_bed<double> S(pA, p, beg, end);
   gwas_lmm_score<double> x(PY, P, S);
-  return x.run_tests();
+  x.run_tests();
+  return S.L;
 }
 
 List dominant_GWAS_lmm_score_bed(XPtr<matrix4> pA, NumericVector PY, NumericMatrix P, NumericVector p, int beg, int end) {
   snp_filler_dominant_bed<double> S(pA, p, beg, end);
   gwas_lmm_score<double> x(PY, P, S);
-  return x.run_tests();
+  x.run_tests();
+  return S.L;
 }
 
 
