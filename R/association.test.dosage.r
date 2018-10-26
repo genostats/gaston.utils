@@ -73,7 +73,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
     if(response == "quantitative") { # score (argument K), wald ou lrt (eigen K) possibles
       if(test == "score") {
         model <- lmm.aireml(Y, X = X, K, get.P = TRUE, ... )
-        t <- .Call("GWAS_dosage_lmm_score_f", PACKAGE = "gaston.utils", filename, model$Py, model$P, beg, end)
+        t <- .Call("gg_GWAS_lmm_score_dosages", PACKAGE = "gaston.utils", filename, model$Py, model$P, beg, end)
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE)
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
@@ -90,7 +90,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
         omega <- model$BLUP_omega
         if (!is.null(X)) omega <- omega + X%*%model$BLUP_beta
         pi <- 1/(1+exp(-omega))
-        t <- .Call("GWAS_dosage_lmm_score_f", PACKAGE = "gaston.utils", filename, Y-pi, model$P, beg, end)
+        t <- .Call("gg_GWAS_lmm_score_dosages", PACKAGE = "gaston.utils", filename, Y-pi, model$P, beg, end)
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE) 
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
