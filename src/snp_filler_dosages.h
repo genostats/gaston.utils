@@ -23,31 +23,31 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
   std::vector<double> F2;
 
   int beg, end;
-  int nb_snps;
+  int nb_inds;
   int i;
 
   snp_filler_dosages(CharacterVector filename, int beg_, int end_, int n)
-    : snp_filler<scalar_t>(), in(filename), beg(beg_), end(end_), nb_snps(n), i(0) {
+    : snp_filler<scalar_t>(), in(filename), beg(beg_), end(end_), nb_inds(n), i(0) {
   };
 
   bool snp_fill(scalar_t * SNP) {
     this->monomorphic = true;
+    dosage.clear();
     if(!in.read_line(dosage, snp_id, snp_pos, chr, A1, A2)) {
-      dosage.clear();
+      Rcout << "ici 1\n";
       return false; // EOF
     }
 
     i++;
     if(i < beg) {
-      dosage.clear();
       return true;
     }
     if(i > end) {
-      dosage.clear();
+      Rcout << "ici 2\n";
       return false; 
     }
-    if(dosage.size() != nb_snps) {
-      dosage.clear()
+    if(dosage.size() != nb_inds) {
+      Rcout << "ici 3\n";
       return false;
     }
 
@@ -57,21 +57,23 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
     AL1.push_back(A1);
     AL2.push_back(A2);
 
-    // ajout deux cols fréquences
-    double ss = std::accumulate(dosage.begin(), dosage.end(), 0.0)/dosage.size()/2.0;
+    // ajout deux cols fréquences et remplissage SNP
+    // double ss = std::accumulate(dosage.begin(), dosage.end(), 0.0)/dosage.size()/2.0;
+    scalar_t ss = 0.0;
+    for(int i = 0; i < nb_inds; i++) {
+       ss += SNP[i] = dosage[i];
+    }
+    ss /= (2.0*nb_inds);
+
     F1.push_back(1.0 - ss);
     F2.push_back(ss);
 
     if(ss < 1.0 || ss > 0.0) {
-       this->monorphic = false;
-    } else {
-      return true;
+       this->monomorphic = false;
     }
-
-    // remplir SNP à partir du vecteur de dosages
-    // [il faut bien supposer que SNP a la bonne dimension...]
-    std::memcpy(SNP, &dosage[0], nb_snps);
     return true;
   }
 };
+
+#endif
 

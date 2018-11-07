@@ -4,16 +4,12 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
                              K, eigenK, beg = 1, end = ncol(x), p = 0, 
                              tol = .Machine$double.eps^0.25, dominance = FALSE, ...) {
 
-  if(beg < 1 || end > ncol(x)) stop("range too wide")
-  if(is.null(x@mu) || is.null(x@p)) stop("Need mu and p to be set in x")
+  if(beg < 1 | end > ncol(x)) stop("range too wide")
+  if(is.null(x@mu) | is.null(x@p)) stop("Need mu and p to be set in x (use set.stats)")
   if(length(Y) != nrow(x)) stop("Dimensions of Y and x mismatch")
   
   X <- as.matrix(X)
   if(nrow(X) != nrow(x)) stop("Dimensions of Y and x mismatch")
-  X <- gaston:::checkX(X, mean(Y))
-
-  response <- match.arg(response)
-  test <- match.arg(test)
   
   # check dimensions before anything
   n <- nrow(x)
@@ -31,8 +27,26 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
       stop("eigenK and x dimensions don't match")
   }
 
+  response <- match.arg(response)
+  test <- match.arg(test)
+  method <- match.arg(method)
+
+  # preparation de X 
+  if(p > 0) {
+    if((method == "lmm" & response == "quantitative" & test == "score") |
+       (method == "lmm" & response == "binary") |
+       (method == "lm")) { # il faut ajouter les PCs à X
+      X <- cbind(X, eigenK$vectors[,seq_len(p)])
+      X <- gaston:::trans.X(X, mean.y = mean(Y))
+    } else {
+      X <- gaston:::trans.X(X, eigenK$vectors[,seq_len(p)], mean(Y))
+    }
+  } else {
+    X <- gaston:::trans.X(X, mean.y = mean(Y))
+  }
+
   # random effect
-  if(match.arg(method) == "lmm") { 
+  if(method == "lmm") { 
 
     # if(response == "binary" & test != "score") {
     #  warning('Binary phenotype and method = "lmm" force test = "score"')
@@ -58,8 +72,6 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
 
     if(response == "quantitative") { # score (argument K), wald ou lrt (eigen K) possibles
       if(test == "score") {
-        if(p > 0) 
-          X <- cbind(X, eigenK$vectors[,seq_len(p)])
         model <- lmm.aireml(Y, X = X, K, get.P = TRUE, ... )
         if(dominance) 
           t <- .Call("gg_dominant_GWAS_lmm_score_bed", PACKAGE = "gaston.utils", x@bed, model$Py, model$P, x@p, beg-1, end-1)
@@ -76,8 +88,6 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
         t$p <- pchisq( t$LRT, df = 1, lower.tail=FALSE)
       }
     } else { # response == "binary", seulement le score test, avec argument K
-      if(p > 0) 
-        X <- cbind(X, eigenK$vectors[,seq_len(p)])
       if(test == "score") {
         model <- logistic.mm.aireml(Y, X = X, K, get.P = TRUE, ... )
         omega <- model$BLUP_omega
@@ -97,23 +107,15 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
   }
 
   # only fixed effects
-  if(match.arg(method) == "lm") {
+  if(method == "lm") {
     if(test != "wald") warning('Method = "lm" force test = "wald"')
+    if( any(is.na(Y)) ) 
+      stop("Can't handle missing data in Y")
     if(response == "quantitative") {
-      if( any(is.na(Y)) ) 
-        stop("Can't handle missing data in Y, please recompute eigenK for the individuals with non-missing phenotype")
-      if(p > 0)
-        Q <- qr.Q(qr(cbind(eigenK$vectors[,seq_len(p)], X)))
-      else
-        Q <- qr.Q(qr(X))
-      t <- .Call("gg_GWAS_lm_quanti", PACKAGE = "gaston", x@bed, x@mu, Y, Q, beg-1, end-1);
-      t$p <- pt( abs(t$beta/t$sd), df = length(Y) - ncol(Q) - 1, lower.tail=FALSE)*2
+      t <- .Call("gg_GWAS_lm_quanti", PACKAGE = "gaston", x@bed, x@mu, Y, X, beg-1, end-1);
+      t$p <- pt( abs(t$beta/t$sd), df = length(Y) - ncol(X) - 1, lower.tail=FALSE)*2
     }
     if(response == "binary") {
-      if( any(is.na(Y)) ) 
-        stop("Can't handle missing data in Y, please recompute eigenK for the individuals with non-missing phenotype")
-      if(p > 0) 
-        X <- cbind(X, eigenK$vectors[,seq_len(p)])
       X <- cbind(X,0)
       t <- .Call("gg_GWAS_logit_wald_f", PACKAGE = "gaston", x@bed, x@mu, Y, X, beg-1, end-1, tol);
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)

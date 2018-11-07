@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include "token.h"
+#include "stringstream_lite.h"
 
 using namespace Rcpp;
 
