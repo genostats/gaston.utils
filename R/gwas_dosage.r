@@ -21,6 +21,17 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
   if(!missing(K)) {
     if(nb.inds != nrow(K) | nb.inds != ncol(K)) stop("K dimensions and #individuals in ", filename, " mismatch")
   }
+
+  if(!missing(K)) {
+    if(!is.list(K)) {
+      if(nb.inds != nrow(K) | nb.inds != ncol(K))
+        stop("K and x dimensions don't match")
+    } else {
+      if(any(nb.inds != sapply(K, nrow)) | any(nb.inds != sapply(K, ncol)))
+        stop("K and x dimensions don't match")
+    }
+  }
+
   if(!missing(eigenK)) {
     if(nb.inds != nrow(eigenK$vectors) | nb.inds != ncol(eigenK$vectors) | nb.inds != length(eigenK$values)) 
       stop("eigenK dimensions and #individuals in ", filename, " mismatch")
