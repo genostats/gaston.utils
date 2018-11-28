@@ -34,7 +34,6 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
     this->monomorphic = true;
     dosage.clear();
     if(!in.read_line(dosage, snp_id, snp_pos, chr, A1, A2)) {
-      Rcout << "ici 1\n";
       return false; // EOF
     }
 
@@ -43,11 +42,9 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
       return true;
     }
     if(i > end) {
-      Rcout << "ici 2\n";
       return false; 
     }
     if(dosage.size() != nb_inds) {
-      Rcout << "ici 3\n";
       return false;
     }
 

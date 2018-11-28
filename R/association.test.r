@@ -117,7 +117,7 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
     }
     if(response == "binary") {
       X <- cbind(X,0)
-      t <- .Call("gg_GWAS_logit_wald_f", PACKAGE = "gaston", x@bed, x@mu, Y, X, beg-1, end-1, tol);
+      t <- .Call("gg_GWAS_logit_wald_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, X, beg-1, end-1, tol);
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
     }
   }
