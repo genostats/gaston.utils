@@ -88,7 +88,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE)
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
-        t <- .Call("GWAS_dosage_lmm_wald", PACKAGE = "gaston.utils", filename, Y, X, p, eigenK$values, eigenK$vectors, beg, end, tol)
+        t <- .Call("gg_GWAS_lmm_wald_dosages", PACKAGE = "gaston.utils", filename, Y, X, p, eigenK$values, eigenK$vectors, beg, end, tol)
         t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
       } else { # test == "lrt"
         X <- cbind(X, 0) # space for the SNP
