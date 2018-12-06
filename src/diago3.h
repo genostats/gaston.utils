@@ -1,7 +1,7 @@
 #include <RcppEigen.h>
 #include <iostream>
 #include "gaston/matrix-varia.h"
-#include "gaston/optimize_2.h"
+#include "optimize_3.h"
 #ifndef GASTONdiag_lmm_likelihood
 #define GASTONdiag_lmm_likelihood
 
@@ -20,10 +20,10 @@ using VECTOR = Eigen::Matrix<scalar_t, Eigen::Dynamic, 1>;
 // MATRIX = MatrixXd, VECTOR = VectorXd, scalar_t = double
 // MATRIX = MatrixXf, VECTOR = VectorXf, scalar_t = float
 template<typename scalar_t>
-class diag_lmm_likelihood : public fun<scalar_t> {
+class diag_lmm_likelihood : public fun_optim<scalar_t> {
   public:
     int p, n, r;
-    const VECTOR<scalar_t> Y;
+    VECTOR<scalar_t> Y;
     MATRIX<scalar_t> X;
     const MATRIX<scalar_t> Sigma;
     VECTOR<scalar_t> P0y;
