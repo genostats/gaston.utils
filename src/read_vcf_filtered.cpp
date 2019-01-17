@@ -48,6 +48,10 @@ bool all_equal(std::vector<std::string> a, std::vector<std::string> b) {
 
 // on passe par des CharacterVector pour utiliser IndexHash...
 // mais pour la suite je prends des std::vector... (que d'aller-retour)
+// SAMPLES_ = les échantillons présents dans le fichier
+// samples = les échantillons à garder
+// OUTPUT : which_samples , booléens de logueur SAMPLES_ qui donne s'il faut ou non garder l'échantillon
+//        : kept = le nom des échantillons gardés, dans l'ordre où ils apparaissent dans SAMPLES_
 void set_which_samples(std::vector<std::string> SAMPLES_, CharacterVector samples, std::vector<bool> & which_samples, std::vector<std::string> & kept) {
   sugar::IndexHash<STRSXP> H(samples);
   H.fill();
