@@ -12,25 +12,52 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
   if(beg < 1 || end > nb.snps) stop("range too wide")
   if(length(Y) != nb.inds) stop("Dimension of Y and #individuals in ", filename, " mismatch")
  
-  if(missing(X)) X <- rep(1, nb.inds); # intercept 
+  if(missing(X)) X <- rep(1, nb.inds); # default = intercept 
   X <- as.matrix(X)
-  if(nrow(X) != nb.inds) stop("Dimensions of Y and #individuals in ", filename, " mismatch")
-  X <- gaston:::checkX(X, mean(Y))
 
-  response <- match.arg(response)
-  test <- match.arg(test)
-  
+  if(nrow(X) != nb.inds) stop("Dimensions of Y and #individuals in ", filename, " mismatch")
+
   # check dimensions before anything
   if(!missing(K)) {
     if(nb.inds != nrow(K) | nb.inds != ncol(K)) stop("K dimensions and #individuals in ", filename, " mismatch")
   }
+
+  if(!missing(K)) {
+    if(!is.list(K)) {
+      if(nb.inds != nrow(K) | nb.inds != ncol(K))
+        stop("K and x dimensions don't match")
+    } else {
+      if(any(nb.inds != sapply(K, nrow)) | any(nb.inds != sapply(K, ncol)))
+        stop("K and x dimensions don't match")
+    }
+  }
+
   if(!missing(eigenK)) {
     if(nb.inds != nrow(eigenK$vectors) | nb.inds != ncol(eigenK$vectors) | nb.inds != length(eigenK$values)) 
       stop("eigenK dimensions and #individuals in ", filename, " mismatch")
   }
 
+
+  response <- match.arg(response)
+  test <- match.arg(test)
+  method <- match.arg(method)
+
+  # preparation de X 
+  if(p > 0) {
+    if((method == "lmm" & response == "quantitative" & test == "score") |
+       (method == "lmm" & response == "binary") |
+       (method == "lm")) { # il faut ajouter les PCs à X
+      X <- cbind(X, eigenK$vectors[,seq_len(p)])
+      X <- gaston:::trans.X(X, mean.y = mean(Y))
+    } else {
+      X <- gaston:::trans.X(X, eigenK$vectors[,seq_len(p)], mean(Y))
+    }
+  } else {
+    X <- gaston:::trans.X(X, mean.y = mean(Y))
+  }
+  
   # random effect
-  if(match.arg(method) == "lmm") { 
+  if(method == "lmm") { 
 
     # if(response == "binary" & test != "score") {
     #  warning('Binary phenotype and method = "lmm" force test = "score"')
@@ -57,11 +84,11 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
     if(response == "quantitative") { # score (argument K), wald ou lrt (eigen K) possibles
       if(test == "score") {
         model <- lmm.aireml(Y, X = X, K, get.P = TRUE, ... )
-        t <- .Call("GWAS_dosage_lmm_score_f", PACKAGE = "gaston.utils", filename, model$Py, model$P, beg, end)
+        t <- .Call("gg_GWAS_lmm_score_dosages", PACKAGE = "gaston.utils", filename, model$Py, model$P, beg, end)
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE)
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
-        t <- .Call("GWAS_dosage_lmm_wald", PACKAGE = "gaston.utils", filename, Y, X, p, eigenK$values, eigenK$vectors, beg, end, tol)
+        t <- .Call("gg_GWAS_lmm_wald_dosages", PACKAGE = "gaston.utils", filename, Y, X, p, eigenK$values, eigenK$vectors, beg, end, tol)
         t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
       } else { # test == "lrt"
         X <- cbind(X, 0) # space for the SNP
@@ -74,7 +101,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
         omega <- model$BLUP_omega
         if (!is.null(X)) omega <- omega + X%*%model$BLUP_beta
         pi <- 1/(1+exp(-omega))
-        t <- .Call("GWAS_dosage_lmm_score_f", PACKAGE = "gaston.utils", filename, Y-pi, model$P, beg, end)
+        t <- .Call("gg_GWAS_lmm_score_dosages", PACKAGE = "gaston.utils", filename, Y-pi, model$P, beg, end)
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE) 
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
@@ -85,28 +112,21 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
   }
 
   # only fixed effects
-  if(match.arg(method) == "lm") {
+  if(method == "lm") {
     if(test != "wald") warning('Method = "lm" force test = "wald"')
+    if( any(is.na(Y)) ) 
+      stop("Can't handle missing data in Y")
     if(response == "quantitative") {
-      if( any(is.na(Y)) ) 
-        stop("Can't handle missing data in Y, please recompute eigenK for the individuals with non-missing phenotype")
-      if(p > 0)
-        Q <- qr.Q(qr(cbind(eigenK$vectors[,seq_len(p)], X)))
-      else
-        Q <- qr.Q(qr(X))
       t <- .Call("GWAS_dosage_lm_quanti", PACKAGE = "gaston.utils", filename, Y, Q, beg, end);
       t$p <- pt( abs(t$beta/t$sd), df = nb.inds - ncol(Q) - 1, lower.tail=FALSE)*2
     }
     if(response == "binary") {
-      if( any(is.na(Y)) ) 
-        stop("Can't handle missing data in Y, please recompute eigenK for the individuals with non-missing phenotype")
-      if(p > 0) 
-        X <- cbind(X, eigenK$vectors[,seq_len(p)])
       X <- cbind(X,0)
-      t <- .Call("GWAS_dosage_logit_wald_f", PACKAGE = "gaston.utils", filename, Y, X, beg, end, tol);
+      t <- .Call("gg_GWAS_logit_wald_dosages", PACKAGE = "gaston.utils", filename, Y, X, beg, end, tol);
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
     }
   }
+
   data.frame( t )
 }
 

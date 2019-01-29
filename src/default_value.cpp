@@ -1,4 +1,5 @@
 #include "default_value.h"
+#include <string>
 #include <Rcpp.h>
 
 template<>

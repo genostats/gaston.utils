@@ -48,7 +48,7 @@ List read_ld_score_filtered(std::vector<std::string> Filenames, snp_filter & F) 
          Rcerr << "last read line : [" << line << "]\n"; 
          stop("Format error in file "+file);
        }
-       if(F(chr, snp, bp, cm)) {
+       if(F(snp, chr, bp, cm)) {
          CHR.push_back(chr);
          SNP.push_back(snp);
          BP.push_back(bp);

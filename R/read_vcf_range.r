@@ -1,22 +1,29 @@
-read.vcf.1 <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf.1 <- function(file, chr, range, chr.ids, samples, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
   if(missing(chr)) {
-    chr <- ""
-    low <- high <- 0;
+    chr <- -1L 
+    low <- high <- -1L;
   } else {
-    chr <- as.character(chr)
-    if(missing(range))
-      low <- high <- -1
-    else {
-      low <- range[1]
+    if(missing(range)) {
+      low <- high <- -1L;
+    } else {
+      low  <- range[1]
       high <- range[2]
       if(low > high) 
         stop("Bad range")
     }
   }
 
-  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high)
+  if(missing(chr.ids))
+    set.chr.ids() 
+  else
+    set.chr.ids(chr.ids)
+
+  if(missing(samples)) 
+    samples <- character(0)
+
+  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, samples)
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
                     quality = L$quality, filter = factor(L$filter), stringsAsFactors = FALSE)
@@ -24,16 +31,6 @@ read.vcf.1 <- function(file, chr, range, get.info = FALSE, convert.chr = TRUE, v
   if(get.info) {
     w <- substr(names(L),1,4) == "info"
     snp[ ,names(L)[w] ] <- L[w]
-  }
-
-  if(convert.chr) {
-    chr <- as.integer(L$chr)
-    chr[L$chr == "X"  | L$chr == "x"]  <- getOption("gaston.chr.x")[1]
-    chr[L$chr == "Y"  | L$chr == "y"]  <- getOption("gaston.chr.y")[1]
-    chr[L$chr == "MT" | L$chr == "mt"] <- getOption("gaston.chr.mt")[1]
-    if(any(is.na(chr)))
-      warning("Some unknown chromosomes id's (try to set convert.chr = FALSE)")
-    snp$chr <- chr
   }
 
   ped <- data.frame(famid = L$samples, id = L$samples, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)

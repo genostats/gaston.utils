@@ -1,11 +1,12 @@
 #include <Rcpp.h>
+#include <string>
 #include <RcppEigen.h>
 #include <fstream>
 #include "gzstream.h"
 #include "dosage_files.h"
 #include <cmath>
-#include "diago2_full.h"
-#include "diago2_full_nocovar.h"
+#include "gaston/diago2_full.h"
+#include "gaston/diago2_full_nocovar.h"
 
 using namespace Rcpp;
 

@@ -1,8 +1,8 @@
 #include <RcppEigen.h>
 #include <math.h>
 #include <iostream>
-#include "matrix-varia.h"
-#include "logit.h"
+#include "gaston/matrix-varia.h"
+#include "gaston/logit.h"
  
 using namespace Rcpp;
 using namespace Eigen;
