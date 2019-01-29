@@ -32,8 +32,8 @@ List read_ld_score_filtered(std::vector<std::string> Filenames, snp_filter & F) 
                             || splitted[1] != "SNP" 
                             || splitted[2] != "BP" 
                             || splitted[3] != "CM"
-                            || splitted[4] != "MAF"
-                            || splitted[5] != "L2")
+                            || splitted[4] != "MAF")
+//                            || splitted[5] != "L2")    // eh oui certains fichiers ont un autre nom à la dernière colonne (annotation)
        stop("Header of file "+file+" isn't what I expected");
   
      // let's go
