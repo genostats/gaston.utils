@@ -12,32 +12,38 @@ add.ld.scores <- function(snp.table, snp.list.file, ld.score.dir, ld.score.files
   if(!all(c(id, "A1", "A2") %in% noms))
     stop("Columns id or SNP, A1, and A2 are mandatory")
 
-  # +/- le travail de munge.py
-  # on lit dans le fichier snp list ceux qui ont le bon id... 
-  cat(nrow(T), "SNP given\n")
-  cat("Reading SNP list reference file", snp.list.file, "\n")
-  SnpList <- read.snp.list(snp.list.file, T[,id])
-  w <- match(T[,id],  SnpList$SNP)
-  T$in_ref <- !is.na(w)
+  if( !missing(snp.list.file) ) {
+    # +/- le travail de munge.py
+    # on lit dans le fichier snp list ceux qui ont le bon id... 
+    cat(nrow(T), "SNP given\n")
+    cat("Reading SNP list reference file", snp.list.file, "\n")
+    SnpList <- read.snp.list(snp.list.file, T[,id])
+    w <- match(T[,id],  SnpList$SNP)
+    T$in_ref <- !is.na(w)
 
-  cat(sum(T$in_ref), "SNPs of the table are in reference\n")
-  SnpList <- SnpList[w, ]
+    cat(sum(T$in_ref), "SNPs of the table are in reference\n")
+    SnpList <- SnpList[w, ]
+   
+    # vérif alleles
+    L <- check.alleles(T$A1, T$A2, SnpList$A1, SnpList$A2)
+    cat(sum(L$OK), "SNPs alleles can be matched with alleles from reference \n(")
+    cat(sum(L$swap), "swaps, ", sum(L$flip), "strand flips)\n")
 
-  # vérif alleles
-  L <- check.alleles(T$A1, T$A2, SnpList$A1, SnpList$A2)
-  cat(sum(L$OK), "SNPs alleles can be matched with alleles from reference \n(")
-  cat(sum(L$swap), "swaps, ", sum(L$flip), "strand flips)\n")
-
-  T$allele_ok <- L$OK
-  T$swap <- L$swap
-  T$flip <- L$flip
+    T$allele_ok <- L$OK
+    T$swap <- L$swap
+    T$flip <- L$flip
+    good_ids <- T[T$in_ref, id] 
+  } else {
+    cat("No SNP list reference file provided, skipping filtering\n")
+    good_ids <- T[, id]
+  }
 
   # T$Z <- T$beta/T$sd
   # T$Z <- ifelse( L$swap, -T$Z, T$Z)
 
   # le début du travail de ldsc
-  cat("Readind LD scores\n")
-  S <- read.ld.score(ld.score.files, T[T$in_ref, id] )    
+  cat("Reading LD scores\n")
+  S <- read.ld.score(ld.score.files, good_ids )    
   cat(nrow(S$ld.scores), "of SNPs in reference have LD scores (total available LD scores = ", S$total.nb.snps, ")\n")
   Scores <- S$ld.scores
 
