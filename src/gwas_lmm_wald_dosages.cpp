@@ -8,7 +8,6 @@ List GWAS_lmm_wald_dosages(CharacterVector filename, NumericVector Y, NumericMat
   snp_filler_dosages<double> S(filename, beg, end, Y.size());
   gwas_lmm_wald<double> x(Y, X, p, Sigma, U, tol, S);
   x.run_tests();
-  Rcout << "###\n";
 
   List R;
   R["id"] = wrap(S.SNP_ID);

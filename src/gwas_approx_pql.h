@@ -1,6 +1,6 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
-#include "diago3.h"
+#include "approx_pql.h"
 #include "snp_filler.h"
 #include <cmath>
 
@@ -15,7 +15,7 @@ using VECTOR = Eigen::Matrix<scalar_t, Eigen::Dynamic, 1>;
 template<typename scalar_t>
 class gwas_approx_pql {
   public:
-  int n, r, p;
+  int n, r;
   scalar_t tol;
   VECTOR<scalar_t> sigma;
   MATRIX<scalar_t> u;
@@ -25,8 +25,8 @@ class gwas_approx_pql {
   VECTOR<scalar_t> y;
 
   gwas_approx_pql(NumericVector Y, NumericMatrix X,
-                int p_, NumericVector Sigma, NumericMatrix U, double tol_, snp_filler<scalar_t> & S_)
-  : n(Sigma.size()), r(X.ncol()), p(p_), tol(tol_), sigma(n), u(n,n), S(S_) {
+                  NumericVector Sigma, NumericMatrix U, double tol_, snp_filler<scalar_t> & S_)
+  : n(Sigma.size()), r(X.ncol()), tol(tol_), sigma(n), u(n,n), S(S_), x(n, X.ncol()), y(n) {
 
     if(Y.size() != n || X.nrow() != n || U.nrow() != n || U.ncol() != n) 
       stop("Dimensions mismatch");
@@ -39,19 +39,13 @@ class gwas_approx_pql {
       for(int i = 0; i < n; i++)
         u(i,j) = U(i,j);
 
-     // copie matrices X et Y avant produit (nécessaire en float)
-    VECTOR<scalar_t> y0(n);
+     // copie matrices X et Y [idem]
     for(int i = 0; i < n; i++)
-      y0[i] = Y[i];
+      y[i] = Y[i];
 
-    MATRIX<scalar_t> x0(n, r);
     for(int j = 0; j < r; j++)
       for(int i = 0; i < n; i++)
-        x0(i,j) = X(i,j);
-
-   // --------------------------------------------
-    x = u.transpose() * x0;
-    y = u.transpose() * y0;
+        x(i,j) = X(i,j);
   }
 
   void run_tests() {
@@ -62,31 +56,24 @@ class gwas_approx_pql {
     std::vector<double> H2, BETA, SDBETA;
 
     // object for likelihood maximization
-    diag_lmm_likelihood<scalar_t> A(p, y, x, sigma);
+    approx_pql<scalar_t> A(y, x, sigma, u, tol);
 
     scalar_t h2 = 0;
+    while( S.snp_fill(&A.X(0,r-1)) ) {
 
-    while( S.snp_fill(&SNP[0]) ) {
-
-      A.X.col(r-1) = u.transpose() * SNP;
-
-      // likelihood maximization
+      // optimisation
       h2 = (h2 > 0.9)?0.9:h2;
-      A.newton_max( h2, 0, 0.99, tol, 10, false); // max_iter = 10... 
+      A.optimize( h2, false); 
     
-      // CALCUL DES BLUPS 
-      VECTOR<scalar_t> beta, omega;
-      A.blup(h2, beta, omega, false, true);
-
-      if(A.d != 0) {
-        H2.push_back(h2);
-        BETA.push_back(beta(r-1));
-        SDBETA.push_back(sqrt(A.v*A.XViX_i(r-1,r-1)));
-      } else {
-        H2.push_back(NAN);
-        BETA.push_back(NAN);
-        SDBETA.push_back(NAN);
-      }
+  //  if(A.dlmm_object.d != 0) {
+        H2.push_back(A.h2);
+        BETA.push_back(A.Beta(r-1));
+        SDBETA.push_back(sqrt(A.VarBeta(r-1,r-1)));
+  //  } else {
+  //    H2.push_back(NAN);
+  //    BETA.push_back(NAN);
+  //    SDBETA.push_back(NAN);
+  //  }
     }
 
     S.L["h2"] = wrap(H2);

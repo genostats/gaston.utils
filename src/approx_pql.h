@@ -29,27 +29,58 @@ class approx_pql {
   MATRIX<scalar_t> X; 
   VECTOR<scalar_t> Sigma;
   MATRIX<scalar_t> U; 
-  VECTOR<scalar_t> Beta, Beta0;
-  MATRIX<scalar_t> VarBeta, UtX; 
-  diag_lmm_likelihood<scalar_t> dlmm_object;
   double tol;
+
+  VECTOR<scalar_t> Beta, Beta0;
+  MATRIX<scalar_t> VarBeta; 
+  diag_lmm_likelihood<scalar_t> dlmm_object;
 
   VECTOR<scalar_t> nu, pi_hat, Z, Omega;
   scalar_t h2;
 
   approx_pql(const VECTOR<scalar_t> Y_, const MATRIX<scalar_t> X_, const VECTOR<scalar_t> Sigma_, const MATRIX<scalar_t> U_, double tol) :
     n(Y_.rows()), r(X_.cols()), Y(Y_), X(X_), Sigma(Sigma_), U(U_), tol(tol),  
-    Beta(r), Beta0(r), VarBeta(r,r), UtX(U.transpose() * X), dlmm_object(0, Y, UtX, Sigma) {
-    // Note : l'objet lmm a Y mal initialisé [sera updaté par U' Z plus tard]
+    Beta(r), Beta0(r), VarBeta(r,r), dlmm_object(0, Y, X, Sigma) {
+    // Note : l'objet lmm a X et Y mal initialisés [sera updaté par U'X et U'Z dans optimize]
+/*
+    Rcout << "Init approx pql\n";
+    Rcout << "Y = " ;
+    for(int i = 0; i < 10 ; i++) Rcout << Y[i] << " ";
+    Rcout << "...\n";
+    Rcout << "X = \n";
+    for(int i = 0; i < 6 ; i++) {
+      for(int j = 0; j < X.cols(); j++) Rcout << X(i,j) << " ";
+      Rcout << "\n";
+    }
+    Rcout << "...\n";
+*/
   }
 
   void optimize(double h2_, bool verbose) {
+
+/*
+    Rcout << "Optimize approx pql\n";
+    Rcout << "Y = " ;
+    for(int i = 0; i < 10 ; i++) Rcout << Y[i] << " ";
+    Rcout << "...\n";
+    Rcout << "X = \n";
+    for(int i = 0; i < 6 ; i++) {
+      for(int j = 0; j < X.cols(); j++) Rcout << X(i,j) << " ";
+      Rcout << "\n";
+    }
+    Rcout << "...\n";
+*/
 
     h2 = h2_;
     // initialisation Beta par régression logistique classique
     logistic_model2<scalar_t>(Y, X, 1e-3, Beta0, VarBeta, 10);
     Beta = Beta0;
-    
+
+    // Calcul de U.transpose * X  -> la matrice de covariable du LMM
+    // le faire ici permet d'être OK avec le fait que X a pu changer 
+    // entre la création de l'objet et l'appel d'optimize
+    dlmm_object.X = U.transpose() * X;
+      
     while(true) { 
       if(verbose) Rcout << "Beta = " << Beta.transpose() << " : ";
       // Calcul de Z = working vector  
