@@ -35,10 +35,9 @@ void logistic_model2(const MATRIX<scalar_t> & y, const MATRIX<scalar_t> & x, sca
     WX.noalias() = W.asDiagonal() * x;
     XWX.noalias() = x.transpose() * WX;
 
-    beta += XWX.llt().solve(U);  // SHOULD BE BETTER THAN sym_inverse(XWX, XWX_i, log_d, d, 1e-5);
-
+    beta += XWX.llt().solve(U);  // better than sym_inverse(XWX, XWX_i, log_d, d, 1e-5);
     U_norm = U.norm();
-    if(k++ > max_iter) return;
+    if(k++ > max_iter) break;
   } 
   // Mais il nous faut l'inverse de XWX pour calculer l'écart type
   XWX_i = XWX.llt().solve( MatrixXd::Identity(p,p) );
