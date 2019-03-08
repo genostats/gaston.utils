@@ -1,7 +1,13 @@
-read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, phase = 3, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
 
   # pour l'instant on ne lit que les autosomes !! (c'est le bordel avec le chr Y)
-  filename <- sprintf("%s/ALL.chr%d.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz", path.expand(dir), 1:22)
+  if(phase == 3) {
+    filename <- sprintf("%s/ALL.chr%d.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz", path.expand(dir), 1:22)
+  } else if(phase == 1) {
+    filename <- sprintf("%s/ALL.chr%d.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.vcf.gz", path.expand(dir), 1:22)
+  } else {
+    stop("Parameter 'phase' should be 1 or 3 (default)")
+  }
 
   if(!missing(x)) {
     filter.snps <- TRUE
@@ -45,6 +51,12 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
   }
 
   ped <- data.frame(famid = L$samples, id = L$samples, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)
+
+  # ajoute population / super.population
+  m <- match(ped$id, KG.samples$sample)
+  ped$population       <- droplevels( KG.samples$population[m] )
+  ped$super.population <- droplevels( KG.samples$super.population[m] )
+
   x <- new("bed.matrix", bed = L$bed, snps = snp, ped = ped,
            p = NULL, mu = NULL, sigma = NULL, standardize_p = FALSE,
            standardize_mu_sigma = FALSE )
