@@ -1,4 +1,5 @@
-read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, phase = 3, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, phase = 3,
+                                 get.info = FALSE, haplotypes = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
 
   # pour l'instant on ne lit que les autosomes !! (c'est le bordel avec le chr Y)
   if(phase == 3) {
@@ -31,15 +32,29 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
       samples <- character(0)
   }
 
-  if(filter.snps) {
-    if(by == "chr:pos") 
-      L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
-    else if(by == "chr:pos:alleles")
-      L <- .Call("gg_read_vcf_chr_pos_al", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
-    else
-      stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
-   } else {
-   L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, -1L, 0L, 0L, samples)
+  if(haplotypes) {
+    if(filter.snps) {
+      if(by == "chr:pos") 
+        L <- .Call("gg_read_vcf_chr_pos_haplo", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
+      else if(by == "chr:pos:alleles")
+        L <- .Call("gg_read_vcf_chr_pos_al_haplo", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
+      else
+        stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
+    } else {
+       L <- .Call("gg_read_vcf_chr_range_haplo", PACKAGE = "gaston.utils", filename, get.info, -1L, 0L, 0L, samples)
+    }
+    L$samples <- paste0( rep(L$sample, each = 2), c(".1", ".2"))
+  } else {
+    if(filter.snps) {
+      if(by == "chr:pos") 
+        L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
+      else if(by == "chr:pos:alleles")
+        L <- .Call("gg_read_vcf_chr_pos_al", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
+      else
+        stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
+    } else {
+       L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, -1L, 0L, 0L, samples)
+    }
   }
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,

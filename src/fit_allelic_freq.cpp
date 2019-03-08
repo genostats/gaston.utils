@@ -27,9 +27,6 @@ void my_logistic_model(const arma::mat & y, const arma::mat & x, double eps, arm
     WX = diagmat(W) * x;
     XWX = x.t() * WX;
 
-    // sym_inverse(XWX, XWX_i, log_d, d, 1e-5);
-    // if(std::abs(d) < 1e-5) {
-    
     if(!inv_sympd(XWX_i, XWX)) { // matrix is singular
       for(int i = 0; i < p; i++) {
         beta(i) = NAN;

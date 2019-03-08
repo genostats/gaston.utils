@@ -80,7 +80,7 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
         t$p <- pchisq( t$score, df = 1, lower.tail=FALSE)
       } else if(test == "wald") {
         X <- cbind(X, 0) # space for the SNP
-        t <- .Call("gg_GWAS_lmm_wald", PACKAGE = "gaston", x@bed, x@mu, Y, X, p, eigenK$values, eigenK$vectors, beg-1, end-1, tol)
+        t <- .Call("gg_GWAS_lmm_wald_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, X, p, eigenK$values, eigenK$vectors, beg-1, end-1, tol)
         t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
       } else { # test == "lrt"
         X <- cbind(X, 0) # space for the SNP
@@ -117,11 +117,11 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
     }
     if(response == "binary") {
       X <- cbind(X,0)
-      t <- .Call("gg_GWAS_logit_wald_f", PACKAGE = "gaston", x@bed, x@mu, Y, X, beg-1, end-1, tol);
+      t <- .Call("gg_GWAS_logit_wald_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, X, beg-1, end-1, tol);
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
     }
   }
-  L <- data.frame(chr = x@snps$chr, pos = x@snps$pos, id  = x@snps$id)
+  L <- data.frame(chr = x@snps$chr, pos = x@snps$pos, id  = x@snps$id,  A1 = x@snps$A1, A2 = x@snps$A2, freqA2 = x@p)
   if(beg > 1 | end < ncol(x))  # avoid copy
     L <- L[beg:end,] 
 

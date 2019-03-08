@@ -1,4 +1,4 @@
-read.vcf.1 <- function(file, chr, range, chr.ids, samples, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf <- function(file, chr, range, chr.ids, samples, get.info = FALSE, haplotypes = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
   if(missing(chr)) {
@@ -23,7 +23,12 @@ read.vcf.1 <- function(file, chr, range, chr.ids, samples, get.info = FALSE, ver
   if(missing(samples)) 
     samples <- character(0)
 
-  L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, samples)
+  if(haplotypes) {
+    L <- .Call("gg_read_vcf_chr_range_haplo", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, samples)
+    L$samples <- paste0( rep(L$sample, each = 2), c(".1", ".2"))
+  } else {
+    L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, chr, low, high, samples)
+  }
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
                     quality = L$quality, filter = factor(L$filter), stringsAsFactors = FALSE)
