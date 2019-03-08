@@ -1,15 +1,6 @@
 read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, phase = 3,
                                  get.info = FALSE, haplotypes = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
 
-  # pour l'instant on ne lit que les autosomes !! (c'est le bordel avec le chr Y)
-  if(phase == 3) {
-    filename <- sprintf("%s/ALL.chr%d.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz", path.expand(dir), 1:22)
-  } else if(phase == 1) {
-    filename <- sprintf("%s/ALL.chr%d.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.vcf.gz", path.expand(dir), 1:22)
-  } else {
-    stop("Parameter 'phase' should be 1 or 3 (default)")
-  }
-
   if(!missing(x)) {
     filter.snps <- TRUE
     if(class(x) == "bed.matrix")
@@ -19,6 +10,25 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
   } else {
     filter.snps <- FALSE
   }
+
+  # NOTE pour l'instant on ne lit que les autosomes !! (c'est le bordel avec le chr Y)
+
+  # si le filtre implique de ne lire que certains chromosomes, on en tient compte
+  # (note : ça serait bien que le filtre soit capable d'interrompre la lecture d'un chromosome
+  #  en tenant compte du fait que les SNPs sont dans l'ordre... ou d'utiliser le tabix... mouais...)
+  if(filter.snps) {
+    chrs <- 1:22 
+    chrs <- chrs[ chrs %in% x$chr ]
+  }
+
+  if(phase == 3) {
+    filename <- sprintf("%s/ALL.chr%d.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz", path.expand(dir), 1:22)
+  } else if(phase == 1) {
+    filename <- sprintf("%s/ALL.chr%d.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.vcf.gz", path.expand(dir), 1:22)
+  } else {
+    stop("Parameter 'phase' should be 1 or 3 (default)")
+  }
+
 
   # pour 1000 genomes le défaut doit être ok
   set.chr.ids() 
