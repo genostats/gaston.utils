@@ -1,3 +1,9 @@
+/* pour aller vite : un gros paquet de copier coller
+ * il faudrait prendre le temps de faire des templates
+ * !!! PLUS TARD !!!
+ * Changements signalés par ** en commentaire
+ */
+
 #include <Rcpp.h>
 #include <iostream>
 #include <string>
@@ -5,7 +11,7 @@
 #include "gaston/matrix4.h"
 #include <fstream>
 #include "gzstream.h"
-#include "read_vcf_line.h"
+#include "read_vcf_line_haplotypes.h"
 #include "token.h"
 #include "default_value.h"
 #include "snp_filter.h"
@@ -16,62 +22,8 @@
 
 using namespace Rcpp;
 
-// un set "sécurisé"
-void set(uint8_t * data, size_t j, uint8_t val) {
-  uint8_t & a = data[j/4];
-  a &= ~(3 << ((j%4)*2));  // set to 00
-  switch(val) {
-    case 0:
-      return;
-    case 1:
-      a |= (1 << ((j%4)*2)); // set to 1
-      return;
-    case 2:
-      a |= (2 << ((j%4)*2)); // set to 2
-      return;
-    default:
-      a |= (3 << ((j%4)*2)); // set to 3 = NA
-  }
-}
-
-bool all_equal(std::vector<std::string> a, std::vector<std::string> b) {
-  int n = a.size();
-  if(n != b.size())
-    return false;
-  for(int i = 0; i < n; i++) 
-    if( a[i].compare(b[i]) != 0 ) 
-      return false;
-  return true;
-}
-
-// on passe par des CharacterVector pour utiliser IndexHash...
-// mais pour la suite je prends des std::vector... (que d'aller-retour)
-// SAMPLES_ = les échantillons présents dans le fichier
-// samples = les échantillons à garder
-// OUTPUT : which_samples , booléens de logueur SAMPLES_ qui donne s'il faut ou non garder l'échantillon
-//        : kept = le nom des échantillons gardés, dans l'ordre où ils apparaissent dans SAMPLES_
-void set_which_samples(std::vector<std::string> SAMPLES_, CharacterVector samples, std::vector<bool> & which_samples, std::vector<std::string> & kept) {
-  sugar::IndexHash<STRSXP> H(samples);
-  H.fill();
-  which_samples.resize(0);
-  which_samples.reserve(SAMPLES_.size());
-
-  kept.resize(0);
-  kept.reserve(SAMPLES_.size());
-
-  CharacterVector SAMPLES(wrap(SAMPLES_));
-  for(auto x : SAMPLES) {
-     if(H.contains(x)) {
-       which_samples.push_back(true);
-       kept.push_back(as<std::string>(x));
-     } else
-       which_samples.push_back(false);
-  }
-
-}
-
 //[[Rcpp::export]]
-List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_filter & FILTER, CharacterVector samples) {
+List read_vcf_filtered_haplo(std::vector<std::string> FILENAMES, bool get_info, snp_filter & FILTER, CharacterVector samples) {
 
   if(FILENAMES.size() < 1)
     stop("Empty Filenames vector");
@@ -110,7 +62,7 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
 
   std::vector<std::vector<float>> INFO( INFO_IDS.size() );
 
-  XPtr<matrix4> pX(new matrix4(0, nsamples));  // avec nrow = 0 allocations() n'est pas appelé
+  XPtr<matrix4> pX(new matrix4(0, 2*nsamples));  // avec nrow = 0 allocations() n'est pas appelé // ** (2*nsamples)
   std::vector<uint8_t *> data;
   int nb_snps = 0;
 
@@ -148,16 +100,16 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
       int chr_;
       double qual_;
 
-      std::vector<int> genotypes;
+      std::vector<int> haplotypes; // **
       if(filter_sample) {
-        if(!parse_vcf_line_genotypes_filtered(line, genotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_, FILTER, which_samples))
+        if(!parse_vcf_line_haplotypes_filtered(line, haplotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_, FILTER, which_samples)) // **
           continue; // skip
       } else {
-        if(!parse_vcf_line_genotypes_filtered(line, genotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_, FILTER))
+        if(!parse_vcf_line_haplotypes_filtered(line, haplotypes, id_, pos_, chr_, ref_, alt_, qual_, filter_, info_, FILTER)) // **
           continue; // skip
       }
 
-      if(genotypes.size() != nsamples)
+      if(haplotypes.size() != 2*nsamples) // **
         Rf_error("VCF format error while reading SNP %s chr = %d pos %d", id_.c_str(), chr_, pos_);
 
       // push back
@@ -177,21 +129,21 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
         }
       }
 
-      // nouvelle ligne de données    
+      // nouvelle ligne de données     CHANGEMENTS DANS TOUT LE BLOC QUI SUIT // ** 
       data_ = new uint8_t [pX->true_ncol];
       std::fill(data_, data_ + pX->true_ncol, 255); // c'est important de remplir avec 3 -> NA
 
       int j = 0;
-      for(int j1 = 0; j1 < nsamples; j1++) {
-        int g = genotypes[j1];
+      for(int j1 = 0; j1 < 2*nsamples; j1++) { // ** 
+        int g = haplotypes[j1]; // ** 
         set(data_, j, g);
         j++;
       }
       data.push_back(data_);
-      nb_snps++;
+      nb_snps++; 
     }
     in.close();
-  }
+  }  // ** fin série de modifs
   
   // et on finit la construction de la matrice
   pX->nrow = nb_snps; 
@@ -219,7 +171,7 @@ List read_vcf_filtered(std::vector<std::string> FILENAMES, bool get_info, snp_fi
 }
 
 
-RcppExport SEXP gg_read_vcf_chr_range(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chr0SEXP, SEXP lowSEXP, SEXP highSEXP, SEXP samples_SXP) {
+RcppExport SEXP gg_read_vcf_chr_range_haplo(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chr0SEXP, SEXP lowSEXP, SEXP highSEXP, SEXP samples_SXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -231,19 +183,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
     if(chr < 0) {
       snp_filter F;
-      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered_haplo(filename, get_info, F, samples));
     } else if(high < 0) {
       snp_filter F(chr);
-      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered_haplo(filename, get_info, F, samples));
     } else {
       snp_filter F(chr, low, high);
-      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
+      rcpp_result_gen = Rcpp::wrap(read_vcf_filtered_haplo(filename, get_info, F, samples));
     }
     return rcpp_result_gen;
 END_RCPP
 }
 
-RcppExport SEXP gg_read_vcf_chr_pos(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP samples_SXP) {
+RcppExport SEXP gg_read_vcf_chr_pos_haplo(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP samples_SXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -253,12 +205,12 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type pos(posSXP);
     Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
     snp_filter F(chr, pos);
-    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
+    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered_haplo(filename, get_info, F, samples));
     return rcpp_result_gen;
 END_RCPP
 }
 
-RcppExport SEXP gg_read_vcf_chr_pos_al(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP a1_SXP, SEXP a2_SXP, SEXP samples_SXP) {
+RcppExport SEXP gg_read_vcf_chr_pos_al_haplo(SEXP filenameSEXP, SEXP get_infoSEXP, SEXP chrSXP, SEXP posSXP, SEXP a1_SXP, SEXP a2_SXP, SEXP samples_SXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -270,7 +222,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< CharacterVector >::type a2(a2_SXP);
     Rcpp::traits::input_parameter< CharacterVector >::type samples(samples_SXP);
     snp_filter F(chr, pos, a1, a2);
-    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered(filename, get_info, F, samples));
+    rcpp_result_gen = Rcpp::wrap(read_vcf_filtered_haplo(filename, get_info, F, samples));
     return rcpp_result_gen;
 END_RCPP
 }

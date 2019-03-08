@@ -1,4 +1,4 @@
-read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples, get.info = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
+read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples, get.info = FALSE, haplotypes = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
   filename <- path.expand(file)
 
   if(class(x) == "bed.matrix")
@@ -14,12 +14,22 @@ read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples,
   if(missing(samples)) 
     samples <- character(0)
 
-  if(by == "chr:pos") 
-    L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
-  else if(by == "chr:pos:alleles")
-    L <- .Call("gg_read_vcf_chr_pos_al", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
-  else
-    stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
+  if(haplotypes) {
+    if(by == "chr:pos") 
+      L <- .Call("gg_read_vcf_chr_pos_haplo", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
+    else if(by == "chr:pos:alleles")
+      L <- .Call("gg_read_vcf_chr_pos_al_haplo", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
+    else
+      stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
+    L$samples <- paste0( rep(L$sample, each = 2), c(".1", ".2"))
+  } else {
+    if(by == "chr:pos") 
+      L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
+    else if(by == "chr:pos:alleles")
+      L <- .Call("gg_read_vcf_chr_pos_al", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
+    else
+      stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
+  }
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
                     quality = L$quality, filter = factor(L$filter), stringsAsFactors = FALSE)

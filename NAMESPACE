@@ -20,7 +20,7 @@ export(association.test)
 export(association.test.dosage, association.test.dosage.parallel)
 export(read.dosage.file, dim.dosage.file, nb.inds.dosage.file)
 
-export(read.vcf.1, read.vcf.filtered, read.vcf.header, read.vcf.1000genomes)
+export(read.vcf, read.vcf.filtered, read.vcf.header, read.vcf.1000genomes)
 export(read.ld.score, read.snp.list)
 export(flip.strand, check.alleles)
 export(Fst)
