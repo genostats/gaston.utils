@@ -1,4 +1,4 @@
-association.test.logit.offset <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)), K, beg = 1, end = ncol(x), p = 0, ...) {
+association.test.logit.offset <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)), K, beg = 1, end = ncol(x), p = 0, correct.var = FALSE, ...) {
 
   if(beg < 1 | end > ncol(x)) stop("range too wide")
   if(is.null(x@mu) | is.null(x@p)) stop("Need mu and p to be set in x (use set.stats)")
@@ -43,7 +43,7 @@ association.test.logit.offset <- function(x, Y = x@ped$pheno, X = matrix(1, nrow
   omega <- model$BLUP_omega
   if (!is.null(X)) omega <- omega + X%*%model$BLUP_beta
 
-  t <- .Call("gg_GWAS_logit_offset_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, omega, X, beg-1, end-1, 1e-8, 25)
+  t <- .Call("gg_GWAS_logit_offset_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, omega, X, beg-1, end-1, 1e-8, 25, correct.var)
   t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail = FALSE)
 
   # mise en forme
