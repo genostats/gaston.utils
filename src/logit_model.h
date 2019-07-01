@@ -14,30 +14,72 @@ using namespace Rcpp;
 using namespace Eigen;
 
 template<typename scalar_t>
-void logistic_model2(const MATRIX<scalar_t> & y, const MATRIX<scalar_t> & x, scalar_t eps, VECTOR<scalar_t> & beta, MATRIX<scalar_t> & XWX_i, int max_iter) {
+void logistic_model2(const VECTOR<scalar_t> & y, const MATRIX<scalar_t> & x, VECTOR<scalar_t> & beta, MATRIX<scalar_t> & XWX_i, 
+                     scalar_t eps = 1.0e-8, int max_iter = 25) {
   int n(y.rows()), p(x.cols());
-  VECTOR<scalar_t> W(n), pi(n), U(p);
+  VECTOR<scalar_t> W(n), pi(n), U(p), Xbeta(n);
   MATRIX<scalar_t> XWX(p,p), WX(n,p);
+  scalar_t dev(0), dev_old(0);
 
   W.setZero();
 
   scalar_t U_norm(1);
   beta.setZero();
-  int k = 1;
+  for(int k = 0; k < max_iter; k++) {
+    Xbeta.noalias() = x * beta;
+    for(int i = 0; i < n; i++) pi(i) = 1/( 1 + exp( - Xbeta(i) ) );
+    W.noalias() = pi.cwiseProduct(VECTOR<scalar_t>::Ones(n) - pi);
 
-  while (U_norm > eps) {
-    for(int j = 0; j < n; j++) {
-      pi(j) = 1/( 1 + exp( - x.row(j).dot(beta) ) );
-      W(j) = pi(j)*(1-pi(j));
-    }
     U.noalias() = x.transpose()*(y - pi);
 
     WX.noalias() = W.asDiagonal() * x;
     XWX.noalias() = x.transpose() * WX;
 
     beta += XWX.llt().solve(U);  // better than sym_inverse(XWX, XWX_i, log_d, d, 1e-5);
-    U_norm = U.norm();
-    if(k++ > max_iter) break;
+
+    // deviance
+    dev_old = dev;
+    dev = y.dot(Xbeta) + (VECTOR<scalar_t>::Ones(n) - pi).log().sum();
+
+    if(k > 0 && fabs(dev - dev_old)/(fabs(dev) + 0.1) < eps) 
+      break; 
+  } 
+  // Mais il nous faut l'inverse de XWX pour calculer l'écart type
+  XWX_i = XWX.llt().solve( MatrixXd::Identity(p,p) );
+}
+
+
+// THE EXACT SAME CODE EXCEPT FOR THE OFFSET ...
+template<typename scalar_t>
+void logistic_model_offset(const VECTOR<scalar_t> & y, const VECTOR<scalar_t> & offset, const MATRIX<scalar_t> & x, VECTOR<scalar_t> & beta, 
+                           MATRIX<scalar_t> & XWX_i, scalar_t eps = 1.0e-8, int max_iter = 25) {
+  int n(y.rows()), p(x.cols());
+  VECTOR<scalar_t> W(n), pi(n), U(p), Xbeta(n);
+  MATRIX<scalar_t> XWX(p,p), WX(n,p);
+  scalar_t dev(0), dev_old(0);
+
+  W.setZero();
+
+  scalar_t U_norm(1);
+  beta.setZero();
+  for(int k = 0; k < max_iter; k++) {
+    Xbeta.noalias() = x * beta + offset;
+    for(int i = 0; i < n; i++) pi(i) = 1/( 1 + exp( - Xbeta(i) ) );
+    W.noalias() = pi.cwiseProduct(VECTOR<scalar_t>::Ones(n) - pi);
+
+    U.noalias() = x.transpose()*(y - pi);
+
+    WX.noalias() = W.asDiagonal() * x;
+    XWX.noalias() = x.transpose() * WX;
+
+    beta += XWX.llt().solve(U);  // better than sym_inverse(XWX, XWX_i, log_d, d, 1e-5);
+
+    // deviance
+    dev_old = dev;
+    dev = y.dot(Xbeta) + (VECTOR<scalar_t>::Ones(n) - pi).log().sum();
+
+    if(k > 0 && fabs(dev - dev_old)/(fabs(dev) + 0.1) < eps) 
+      break; 
   } 
   // Mais il nous faut l'inverse de XWX pour calculer l'écart type
   XWX_i = XWX.llt().solve( MatrixXd::Identity(p,p) );

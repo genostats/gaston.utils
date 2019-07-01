@@ -73,7 +73,7 @@ class approx_pql {
 
     h2 = h2_;
     // initialisation Beta par régression logistique classique
-    logistic_model2<scalar_t>(Y, X, 1e-3, Beta0, VarBeta, 10);
+    logistic_model2<scalar_t>(Y, X, Beta0, VarBeta);
     Beta = Beta0;
 
     // Calcul de U.transpose * X  -> la matrice de covariable du LMM

@@ -1,4 +1,4 @@
-association.test.approx.pql <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)), K, beg = 1, end = ncol(x), p = 0, ...) {
+association.test.logit.offset <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)), K, beg = 1, end = ncol(x), p = 0, ...) {
 
   if(beg < 1 | end > ncol(x)) stop("range too wide")
   if(is.null(x@mu) | is.null(x@p)) stop("Need mu and p to be set in x (use set.stats)")
@@ -19,7 +19,7 @@ association.test.approx.pql <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x
       stop("K and x dimensions don't match")
   }
 
-  # preparation de X 
+  # preparation de X [Y COMPRIS DECOMPOSITION QR]
   if(p > 0) {
     X <- cbind(X, eigenK$vectors[,seq_len(p)])
     X <- gaston:::trans.X(X, mean.y = mean(Y))
@@ -38,11 +38,12 @@ association.test.approx.pql <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x
    
   # c'est parti
   model <- logistic.mm.aireml(Y, X = X, K, get.P = TRUE, ... )
+
+  # ça c'est l'offset
   omega <- model$BLUP_omega
   if (!is.null(X)) omega <- omega + X%*%model$BLUP_beta
-  pi <- 1/(1+exp(-omega))
 
-  t <- .Call("gg_GWAS_approx_pql_bed", PACKAGE = "gaston.utils", x@bed, Y-pi, model$P, x@p, beg-1, end-1)
+  t <- .Call("gg_GWAS_logit_offset_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, omega, X, beg-1, end-1, 1e-8, 25)
   t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail = FALSE)
 
   # mise en forme

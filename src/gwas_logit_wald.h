@@ -21,14 +21,14 @@ class gwas_logit_wald {
   public:
   int n, r;
   scalar_t tol;
-  MATRIX<scalar_t> y;
+  VECTOR<scalar_t> y;
   MATRIX<scalar_t> x;
   snp_filler<scalar_t> & S;
 
   gwas_logit_wald(NumericVector Y, NumericMatrix X, double tol_, snp_filler<scalar_t> & S_) : 
-    n(Y.size()), r(X.ncol()), tol(tol_), y(n,1), x(n,r), S(S_) {
+    n(Y.size()), r(X.ncol()), tol(tol_), y(n), x(n,r), S(S_) {
     // recopiage des matrices... nécessaire en float
-    for(int i = 0; i < n; i++) y(i,0) = (float) Y[i];
+    for(int i = 0; i < n; i++) y(i) = (scalar_t) Y[i];
 
     for(int i = 0; i < n; i++) 
       for(int j = 0; j < r; j++)
@@ -56,7 +56,7 @@ class gwas_logit_wald {
         BETA.push_back(NAN);
         SDBETA.push_back(NAN);
       } else {
-        logistic_model2<scalar_t>(y, x, tol, beta, varbeta, 10);
+        logistic_model2<scalar_t>(y, x, beta, varbeta, tol);
         BETA.push_back(beta(r-1));
         SDBETA.push_back(sqrt(varbeta(r-1,r-1)));
       }

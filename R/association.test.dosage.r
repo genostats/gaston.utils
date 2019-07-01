@@ -1,6 +1,6 @@
 association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), response = c("quantitative", "binary"), 
                                     test = c("score", "wald", "lrt"), K, eigenK, beg, end, p = 0, 
-                                    tol = .Machine$double.eps^0.25, ...) {
+                                    tol = .Machine$double.eps^0.25, logistic.tol = 1e-8, ...) {
   filename <- path.expand(filename)
   dims <- dim.dosage.file(filename)
   nb.inds <- dims[1]
@@ -122,7 +122,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
     }
     if(response == "binary") {
       X <- cbind(X,0)
-      t <- .Call("gg_GWAS_logit_wald_dosages", PACKAGE = "gaston.utils", filename, Y, X, beg, end, tol);
+      t <- .Call("gg_GWAS_logit_wald_dosages", PACKAGE = "gaston.utils", filename, Y, X, beg, end, logistic.tol);
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
     }
   }

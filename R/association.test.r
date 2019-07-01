@@ -2,7 +2,7 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
                              method = c("lm", "lmm"), response = c("quantitative", "binary"), 
                              test = c("score", "wald", "lrt"), 
                              K, eigenK, beg = 1, end = ncol(x), p = 0, 
-                             tol = .Machine$double.eps^0.25, dominance = FALSE, ...) {
+                             tol = .Machine$double.eps^0.25, logistic.tol = 1e-8, dominance = FALSE, ...) {
 
   if(beg < 1 | end > ncol(x)) stop("range too wide")
   if(is.null(x@mu) | is.null(x@p)) stop("Need mu and p to be set in x (use set.stats)")
@@ -117,7 +117,7 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
     }
     if(response == "binary") {
       X <- cbind(X,0)
-      t <- .Call("gg_GWAS_logit_wald_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, X, beg-1, end-1, tol);
+      t <- .Call("gg_GWAS_logit_wald_bed", PACKAGE = "gaston.utils", x@bed, x@p, Y, X, beg-1, end-1, logistic.tol);
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
     }
   }
