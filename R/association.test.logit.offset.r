@@ -1,4 +1,4 @@
-association.test.logit.offset <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)), K, beg = 1, end = ncol(x), p = 0, correct.var = FALSE, ...) {
+association.test.logit.offset <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)), K, beg = 1, end = ncol(x), eigenK, p = 0, correct.var = FALSE, ...) {
 
   if(beg < 1 | end > ncol(x)) stop("range too wide")
   if(is.null(x@mu) | is.null(x@p)) stop("Need mu and p to be set in x (use set.stats)")
