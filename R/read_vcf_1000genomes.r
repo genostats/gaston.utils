@@ -53,7 +53,8 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
     } else {
        L <- .Call("gg_read_vcf_chr_range_haplo", PACKAGE = "gaston.utils", filename, get.info, -1L, 0L, 0L, samples)
     }
-    L$samples <- paste0( rep(L$sample, each = 2), c(".1", ".2"))
+    ped <- data.frame(famid = L$samples, id = paste0( rep(L$sample, each = 2), c(".1", ".2")), father = 0, mother = 0, 
+                      sex = 0, pheno = NA, stringsAsFactors = FALSE)
   } else {
     if(filter.snps) {
       if(by == "chr:pos") 
@@ -65,6 +66,7 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
     } else {
        L <- .Call("gg_read_vcf_chr_range", PACKAGE = "gaston.utils", filename, get.info, -1L, 0L, 0L, samples)
     }
+    ped <- data.frame(famid = L$samples, id = L$samples, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)
   }
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
@@ -75,10 +77,9 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
     snp[ ,names(L)[w] ] <- L[w]
   }
 
-  ped <- data.frame(famid = L$samples, id = L$samples, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)
 
   # ajoute population / super.population
-  m <- match(ped$id, KG.samples$sample)
+  m <- match(ped$famid, KG.samples$sample)
   ped$population       <- droplevels( KG.samples$population[m] )
   ped$super.population <- droplevels( KG.samples$super.population[m] )
 
