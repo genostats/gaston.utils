@@ -1,7 +1,7 @@
 Package: gaston.utils
 Type: Package
 Title: Parallel GWAS with gaston
-Version: 0.3.2
+Version: 0.3.3
 Date: 2017-03-11
 Encoding: UTF-8
 Author: Hervé Perdry 
