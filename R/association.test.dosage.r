@@ -127,7 +127,7 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
     }
   }
 
-  data.frame( t )
+  data.frame( t, stringsAsFactors = FALSE )
 }
 
 

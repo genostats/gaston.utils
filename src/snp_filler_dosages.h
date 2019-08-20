@@ -31,16 +31,20 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
   };
 
   bool snp_fill(scalar_t * SNP) {
+
+  lecture_dosage:
+
     this->monomorphic = true;
     dosage.clear();
+
     if(!in.read_line(dosage, snp_id, snp_pos, chr, A1, A2)) {
       return false; // EOF
     }
 
     i++;
-    if(i < beg) {
-      return true;
-    }
+    if(i < beg) {  // Si il faut sauter des lignes...
+      goto lecture_dosage; 
+    } 
     if(i > end) {
       return false; 
     }

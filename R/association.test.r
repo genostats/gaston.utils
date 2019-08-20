@@ -121,11 +121,11 @@ association.test <- function(x, Y = x@ped$pheno, X = matrix(1, nrow(x)),
       t$p <- pchisq( (t$beta/t$sd)**2, df = 1, lower.tail=FALSE)
     }
   }
-  L <- data.frame(chr = x@snps$chr, pos = x@snps$pos, id  = x@snps$id,  A1 = x@snps$A1, A2 = x@snps$A2, freqA2 = x@p)
+  L <- data.frame(chr = x@snps$chr, pos = x@snps$pos, id  = x@snps$id,  A1 = x@snps$A1, A2 = x@snps$A2, freqA2 = x@p, stringsAsFactors = FALSE)
   if(beg > 1 | end < ncol(x))  # avoid copy
     L <- L[beg:end,] 
 
-  data.frame( c( L, t) )
+  data.frame( c( L, t), stringsAsFactors = FALSE )
 }
 
 
