@@ -29,7 +29,7 @@ dosages::~dosages() {
 }
 
 // se met en début de fichier 
-// initialise le vectuer samples quand c'est un VCF
+// initialise le vecteur samples quand c'est un VCF
 void dosages::start() {
   if(!in.good()) 
     stop("Can't open file");
@@ -114,6 +114,26 @@ bool dosages::read_line(std::vector<float> & dosage, std::string & snp_id,
     parse_vcf_line_dosages<float>(line, dosage, snp_id, snp_pos, chr, A1, A2);
   if(type == PES)
     parse_gen_line_pes<float>(line, dosage, snp_id, chr, snp_pos, A1, A2);
+  // read next line now...a
+  if(std::getline(in, line))
+    good = true;
+  else
+    good = false;
+
+  return true;
+}
+
+
+bool dosages::read_line(std::string & snp_id, int & snp_pos, std::string & chr, std::string & A1, std::string & A2) {
+  if(!good) return false;
+  if(type == Impute2) {
+    chr = "NA";
+    parse_gen_line(line, snp_id, snp_pos, A1, A2);
+  }
+  if(type == VCF)
+    parse_vcf_line(line, snp_id, snp_pos, chr, A1, A2);
+  if(type == PES)
+    parse_gen_line_pes(line, snp_id, chr, snp_pos, A1, A2);
   // read next line now...a
   if(std::getline(in, line))
     good = true;

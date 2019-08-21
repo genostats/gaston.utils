@@ -15,6 +15,15 @@ using namespace Rcpp;
 
 // #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT
 
+inline void parse_vcf_line(std::string line, std::string & snp_id, int & snp_pos, 
+                            std::string & chr, std::string & A1, std::string & A2) {
+  std::istringstream li(line);
+  std::string qual, filter, info, format;
+  if(!(li >> chr >> snp_pos >> snp_id >> A1 >> A2 >> qual >> filter >> info >> format))
+    stop("VCF file format error");
+}
+
+
 template<typename scalar_t> 
 void parse_vcf_line_dosages(std::string line, std::vector<scalar_t> & dosage, std::string & snp_id,
                      int & snp_pos, std::string & chr, std::string & A1, std::string & A2) {
@@ -53,6 +62,9 @@ bool read_vcf_line_dosages(igzstream & in, std::vector<scalar_t> & dosage, std::
   parse_vcf_line_dosages<scalar_t>(line, dosage, snp_id, snp_pos, chr, A1, A2);
   return true;
 }
+
+
+
 
 template<typename scalar_t>
 inline scalar_t geno_conv(char * s, int le) {

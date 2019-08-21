@@ -39,6 +39,8 @@ public:
   bool read_line(std::vector<float> & dosage, std::string & snp_id, 
                      int & snp_pos, std::string & chr, std::string & A1, std::string & A2);
 
+  bool read_line(std::string & snp_id, int & snp_pos, std::string & chr, std::string & A1, std::string & A2);
+
 };
 
 #endif

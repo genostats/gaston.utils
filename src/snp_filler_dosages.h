@@ -28,11 +28,16 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
 
   snp_filler_dosages(CharacterVector filename, int beg_, int end_, int n)
     : snp_filler<scalar_t>(), in(filename), beg(beg_), end(end_), nb_inds(n), i(0) {
+
+    while(i+1 != beg) {
+      if(!in.read_line(snp_id, snp_pos, chr, A1, A2)) {
+        break; // EOF
+      }
+      i++;
+    }  
   };
 
   bool snp_fill(scalar_t * SNP) {
-
-  lecture_dosage:
 
     this->monomorphic = true;
     dosage.clear();
@@ -42,8 +47,8 @@ class snp_filler_dosages : public snp_filler<scalar_t> {
     }
 
     i++;
-    if(i < beg) {  // Si il faut sauter des lignes...
-      goto lecture_dosage; 
+    if(i < beg) {  
+      stop("Something went wrong");
     } 
     if(i > end) {
       return false; 
