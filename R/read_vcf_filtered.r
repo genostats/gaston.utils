@@ -21,7 +21,8 @@ read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples,
       L <- .Call("gg_read_vcf_chr_pos_al_haplo", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
     else
       stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
-    L$samples <- paste0( rep(L$sample, each = 2), c(".1", ".2"))
+    famid <- rep(L$sample, each = 2)
+    id <- paste0( rep(L$sample, each = 2), c(".1", ".2"))
   } else {
     if(by == "chr:pos") 
       L <- .Call("gg_read_vcf_chr_pos", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, samples)
@@ -29,6 +30,7 @@ read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples,
       L <- .Call("gg_read_vcf_chr_pos_al", PACKAGE = "gaston.utils", filename, get.info, x$chr, x$pos, x$A1, x$A2, samples)
     else
       stop("Parameter 'by' should be 'chr:pos' or 'chr:pos:alleles'")
+    id <- famid <- L$samples
   }
 
   snp <- data.frame(chr = L$chr, id = L$id, dist = rep(0, length(L$chr)), pos = L$pos , A1 = L$A1, A2 = L$A2,
@@ -39,7 +41,7 @@ read.vcf.filtered <- function(file, x, by = "chr:pos:alleles", chr.ids, samples,
     snp[ ,names(L)[w] ] <- L[w]
   }
 
-  ped <- data.frame(famid = L$samples, id = L$samples, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)
+  ped <- data.frame(famid = famid, id = id, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)
   x <- new("bed.matrix", bed = L$bed, snps = snp, ped = ped,
            p = NULL, mu = NULL, sigma = NULL, standardize_p = FALSE,
            standardize_mu_sigma = FALSE )
