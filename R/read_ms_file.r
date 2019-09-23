@@ -2,14 +2,14 @@
 read.ms.file <- function(filename, rep = 1L) {
   L <- .Call('read_ms_file', PACKAGE = "gaston.utils", filename, rep)
 
-  snp <- data.frame(chr = 1, id = paste("id", 1:L$snps), dist = L$pos, pos = NA_integer_, A1 = '0', A2 = '1')
-  ped <- data.frame(famid = rep(NA_character_, L$inds), id = NA_character_, father = 0, mother = 0, sex = 0, pheno = NA, stringsAsFactors = FALSE)
+  snp <- data.frame(chr = 1, id = sprintf("Ga%0*d", nchar(L$snps), 1:L$snps), dist = NA_real_, pos = as.integer(1e5*L$pos), 
+                    A1 = '0', A2 = '1', stringsAsFactors = FALSE)
+  ped <- data.frame(famid = 1:L$inds, id = 1:L$inds, father = 0, mother = 0, sex = 0, pheno = NA)
 
   x <- new("bed.matrix", bed = L$bed, snps = snp, ped = ped,
            p = NULL, mu = NULL, sigma = NULL, standardize_p = FALSE,
            standardize_mu_sigma = FALSE )
 
-  if(getOption("gaston.auto.set.stats", TRUE)) x <- set.stats(x, verbose = verbose)
+  if(getOption("gaston.auto.set.stats", TRUE)) x <- set.stats(x)
   x
-
 }

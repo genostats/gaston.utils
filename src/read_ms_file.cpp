@@ -11,10 +11,10 @@ using namespace Rcpp;
 //[[Rcpp::export]]
 List read_ms_file(std::string filename, int rep) {
   msFile in(filename, rep);
-  Rcout << "nsamples = " << in.nsamples << "\n";
-  Rcout << "segsites = " << in.segsites << "\n";
-  for(auto p : in.pos) Rcout << p << " ";
-  Rcout << "\n";
+  // Rcout << "nsamples = " << in.nsamples << "\n";
+  // Rcout << "segsites = " << in.segsites << "\n";
+  // for(auto p : in.pos) Rcout << p << " ";
+  // Rcout << "\n";
 
   XPtr<matrix4> pX(new matrix4(in.segsites, in.nsamples/2));  
 
@@ -22,12 +22,17 @@ List read_ms_file(std::string filename, int rep) {
   int j = 0;
 
   while( in.read_genotype(x) ) {
-    for(auto u : x) Rcout << (int) u;
-    Rcout << "\n";
+    // for(auto u : x) Rcout << (int) u;
+    // Rcout << "\n";
     for(int i = 0; i < in.segsites; i++)
       pX->set(i, j, x[i]);
     j++;
+    if(j > in.nsamples/2) 
+      stop("Too much haplotypes in ms file");
   }
+  if(j < in.nsamples/2) 
+    warning("Too few haplotypes in ms file");
+
   List L;
   L["bed"] = pX;
   L["snps"] = in.segsites;
