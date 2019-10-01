@@ -11,24 +11,30 @@ public:
   std::string filename;
   std::ifstream in;
   int nsamples; // le nombre de 'samples' (chromosomes) générés par ms
-  int rep; // le replicat à lire
-  bool good;
-  int segsites; // nombre de SNPs
-  std::vector<double> pos; // la ligne 'positions'
+  int nreplicates; // le nombre de replicats (tous de nsamples)
 
-  msFile(std::string file, int rep = 1);
-  msFile(const char * file, int rep = 1);
-  msFile(const CharacterVector Filename, int rep = 1);
+  int total_segsites; // nombre total de segsites (sommé sur tous les réplicats)
+
+  int rep; // le replicat en cours de lecture
+  int segsites; // nombre de SNPs du replicat en cours de lectures
+
+  // will contain all date of the current replicate
+  std::vector< std::vector<char> > currentRep;
+
+
+  msFile(std::string file);
+  msFile(const char * file);
+  msFile(const CharacterVector Filename);
   ~msFile();
 
 
 private:  
-  void start();
-
+  void start(); // appelé par les constructeurs pour tout mettre en route
+  bool next_replicate(); // lecture du réplicat suivant dans currentRep. False en fin de fichier.
 public:
-  bool read_haplotype(std::vector<char> & haplo);
-  bool read_genotype(std::vector<char> & geno);
-
+  // read one SNP for all individuals. All replicates are considered one after another.
+  // sends true while there are some still SNPs to read.
+  bool read_SNP(std::vector<char> & haplo);
 };
 
 #endif
