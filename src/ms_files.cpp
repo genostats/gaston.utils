@@ -7,15 +7,15 @@
 
 using namespace Rcpp;
 
-msFile::msFile(std::string file, int rep) : filename(file), in( (char *) &filename[0u] ), rep(rep) {
+msFile::msFile(std::string file) : filename(file), in( (char *) &filename[0u] ) {
   start();
 }
 
-msFile::msFile(const char * file, int rep) : filename(file), in(file), rep(rep) {
+msFile::msFile(const char * file) : filename(file), in(file) {
   start();
 }
 
-msFile::msFile(const CharacterVector Filename, int rep) : filename(Filename[0]), in( (const char *) &filename[0u] ), rep(rep) {
+msFile::msFile(const CharacterVector Filename) : filename(Filename[0]), in( (const char *) &filename[0u] ) {
   start();
 }
 
@@ -33,10 +33,11 @@ void msFile::start() {
   std::getline(in, line); // ligne de commande
   std::istringstream li(line);
   std::string s;
-  if(!(li >> s >> nsamples))
+  if(!(li >> s >> nsamples >> nreplicates))
     stop("ms file format error");
 
 
+  // premiere passe sur la fichier.
   for(int r = 0; r < rep; r++) {
     while(std::getline(in, line)) 
       if(line.substr(0,2) == "//")  
