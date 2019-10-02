@@ -13,6 +13,7 @@ public:
   int nsamples; // le nombre de 'samples' (chromosomes) générés par ms
   int nreplicates; // le nombre de replicats (tous de nsamples)
 
+  std::vector<int> SEGSITES; // le nombre de Segsites, réplicat par réplicat
   int total_segsites; // nombre total de segsites (sommé sur tous les réplicats)
 
   int rep; // le replicat en cours de lecture
