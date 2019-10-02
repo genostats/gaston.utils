@@ -36,34 +36,72 @@ void msFile::start() {
   if(!(li >> s >> nsamples >> nreplicates))
     stop("ms file format error");
 
-
-  // premiere passe sur la fichier.
-  for(int r = 0; r < rep; r++) {
+  total_segsites = 0;
+  // premiere passe sur le fichier.
+  // on lit tous les réplicats...
+  for(int r = 0; r < nreplicates; r++) {
+    // aller au début d'un replicat
     while(std::getline(in, line)) 
       if(line.substr(0,2) == "//")  
         break;
+    // vérifier que tout va bien
+    if(line.substr(0,2) != "//")
+      stop("ms file format error");
+    // lire ligne segsites
+    std::getline(in, line);
+    li = std::istringstream(line);
+    if(!(li >> s >> segsites))
+      stop("ms file format error");
+    total_segsites += segsites;
   }
 
-  if(line.substr(0,2) != "//")
-    stop("ms file format error");
+  // rewind file
+  in.seekg(0);
 
-  std::getline(in, line); // ligne segsites;
+  // Go to first replicate
+  if(!next_replicate())
+    stop("ms file format error"); 
+}
+
+bool msFile::next_replicate() {
+  std::string line;
+  std::istringstream li(line);
+  std::string s;
+  // aller au début d'un replicat
+  while(std::getline(in, line)) 
+    if(line.substr(0,2) == "//")
+      break;
+
+  // vérifier qu'on y est bien !
+  if(line.substr(0,2) != "//")
+    return false;
+
+  // lire lignes segsites et positions 
+  // on ne teste pas la présence possible d'un arbre (option -T) ou d'une proba (-t et -s à la fois)
+  std::getline(in, line);
   li = std::istringstream(line);
   if(!(li >> s >> segsites))
     stop("ms file format error");
-
-  std::getline(in, line); // ligne positions
-  li = std::istringstream(line);
-  if(!(li >> s))
-    stop("ms file format error");
-  double p;
-  while(li >> p) 
-    pos.push_back(p);
-  
+  // ligne position
+  std::getline(in, line);
+  // On lit tout 
+  currentRep.clear();
+  while( std::getline(in, line) ) {
+    if(line.length() == 0) // fin du réplicat
+      break;
+    if(line.length() != segsites)
+      stop("ms file format error");
+    std::vector<char> haplo(segsites);
+    for(int i = 0; i < segsites; i++) 
+      haplo[i] = line[i] - '0';
+    currentRep.push_back(haplo);
+  }
+  return true;
 }
 
-bool msFile::read_haplotype(std::vector<char> & haplo) {
-  std::string line;
+
+bool msFile::read_SNP(std::vector<char> & snp) {
+/*  std::string line;
   if(!std::getline(in, line))
     return false;
 
@@ -76,37 +114,7 @@ bool msFile::read_haplotype(std::vector<char> & haplo) {
   haplo.resize(segsites);
   for(int i = 0; i < segsites; i++) 
     haplo[i] = line[i] - '0';
-
+*/
   return true;
 };
-  
-bool msFile::read_genotype(std::vector<char> & geno) {
-  std::string line;
-  if(!std::getline(in, line))
-    return false;
-
-  if(line.length() == 0)
-    return false;
-
-  if(line.length() != segsites)
-    stop("ms file format error");
-
-  geno.resize(segsites);
-  for(int i = 0; i < segsites; i++) 
-    geno[i] = line[i] - '0';
-
-  // deuxième haplotype
-  if(!std::getline(in, line))
-    return false;
-
-  if(line.length() == 0)
-    return false;
-
-  if(line.length() != segsites)
-    stop("ms file format error");
-
-  for(int i = 0; i < segsites; i++) 
-    geno[i] += line[i] - '0';
-
-  return true;
-}
+ 

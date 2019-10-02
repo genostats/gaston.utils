@@ -16,9 +16,10 @@ public:
   int total_segsites; // nombre total de segsites (sommé sur tous les réplicats)
 
   int rep; // le replicat en cours de lecture
-  int segsites; // nombre de SNPs du replicat en cours de lectures
+  int segsites; // nombre de SNPs du replicat en cours de lecture
+  int snp; // numero du SNP du réplicat en cours de lecture... (de 0 à segsites-1)
 
-  // will contain all date of the current replicate
+  // will contain all data of the current replicate
   std::vector< std::vector<char> > currentRep;
 
 
