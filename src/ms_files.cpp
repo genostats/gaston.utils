@@ -28,13 +28,14 @@ void msFile::start() {
   if(!in.good())
     stop("Can't open file");
 
-  std::string line;
+  std::string line, s;
 
-  std::getline(in, line); // ligne de commande
-  std::istringstream li(line);
-  std::string s;
-  if(!(li >> s >> nsamples >> nreplicates))
+  {
+    std::getline(in, line); // ligne de commande
+    std::istringstream li(line);
+    if(!(li >> s >> nsamples >> nreplicates))
     stop("ms file format error");
+  }
 
   SEGSITES.reserve(nreplicates);
   total_segsites = 0;
@@ -51,7 +52,7 @@ void msFile::start() {
 
     // lire ligne segsites
     std::getline(in, line);
-    li = std::istringstream(line);
+    std::istringstream li(line);
     if(!(li >> s >> segsites))
       stop("ms file format error");
 
@@ -70,7 +71,6 @@ void msFile::start() {
 
 bool msFile::next_replicate() {
   std::string line;
-  std::istringstream li(line);
   std::string s;
   // aller au début d'un replicat
   while(std::getline(in, line)) 
@@ -84,7 +84,7 @@ bool msFile::next_replicate() {
   // lire lignes segsites et positions 
   // on ne teste pas la présence possible d'un arbre (option -T) ou d'une proba (-t et -s à la fois)
   std::getline(in, line);
-  li = std::istringstream(line);
+  std::istringstream li(line);
   if(!(li >> s >> segsites))
     stop("ms file format error");
   // ligne position
