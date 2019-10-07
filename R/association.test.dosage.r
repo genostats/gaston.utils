@@ -117,8 +117,8 @@ association.test.dosage <- function(filename, Y, X, method = c("lm", "lmm"), res
     if( any(is.na(Y)) ) 
       stop("Can't handle missing data in Y")
     if(response == "quantitative") {
-      t <- .Call("GWAS_dosage_lm_quanti", PACKAGE = "gaston.utils", filename, Y, Q, beg, end);
-      t$p <- pt( abs(t$beta/t$sd), df = nb.inds - ncol(Q) - 1, lower.tail=FALSE)*2
+      t <- .Call("GWAS_dosage_lm_quanti", PACKAGE = "gaston.utils", filename, Y, X, beg, end);
+      t$p <- pt( abs(t$beta/t$sd), df = nb.inds - ncol(X) - 1, lower.tail=FALSE)*2
     }
     if(response == "binary") {
       X <- cbind(X,0)
