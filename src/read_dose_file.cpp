@@ -76,6 +76,11 @@ int nb_inds_dose_file(CharacterVector filename) {
   return dosage.size();
 }
 
+CharacterVector samples_dose_file(CharacterVector filename) {
+  dosages in( filename );
+  return wrap(in.samples);
+}
+
 RcppExport SEXP zz_read_dose_file(SEXP filenameSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -102,6 +107,16 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< CharacterVector >::type filename(filenameSEXP);
     rcpp_result_gen = Rcpp::wrap(nb_inds_dose_file(filename));
+    return rcpp_result_gen;
+END_RCPP
+}
+
+RcppExport SEXP zz_samples_dose_file(SEXP filenameSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< CharacterVector >::type filename(filenameSEXP);
+    rcpp_result_gen = Rcpp::wrap(samples_dose_file(filename));
     return rcpp_result_gen;
 END_RCPP
 }
