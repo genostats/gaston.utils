@@ -11,6 +11,8 @@ using namespace Rcpp;
 // max_dist : la distance au dessus de laquelle on ne calcule pas le LD
 // order : l'ordre dans lequel considérer les SNPs = order(p) - 1
 // 
+// !!! SUPPOSE QUE LES SNPs SONT BIEN DANS L'ORDRE DU GENOME !!!
+//
 // [[Rcpp::export]]
 IntegerVector ld_clump(XPtr<matrix4> pA, NumericVector mu, NumericVector sd, double threshold,
                        IntegerVector pos, IntegerVector chr, int max_dist, IntegerVector order) {
@@ -29,6 +31,7 @@ IntegerVector ld_clump(XPtr<matrix4> pA, NumericVector mu, NumericVector sd, dou
     int max_pos = pos[i] + max_dist;
     double mu_i = mu[i];
     double sd_i = sd[i];
+    // on balaie le chr vers la gauche
     int j = i-1;
     while(chr[j] == c && pos[j] > min_pos) {
       if(Index[j] < 0) { // SNP pas encore indexé
@@ -38,6 +41,7 @@ IntegerVector ld_clump(XPtr<matrix4> pA, NumericVector mu, NumericVector sd, dou
       }
       j--;
     }
+    // puis vers la droite
     j = i+1;
     while(chr[j] == c && pos[j] < max_pos) {
       if(Index[j] < 0) {
