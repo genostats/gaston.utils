@@ -37,6 +37,7 @@ class gwas_approx_pql {
     std::vector<double> beta;
     std::vector<double> sd_beta;
     double t, v;  
+
     while( S.snp_fill( &SNP[0] ) ) {
       if( S.current_snp_monomorphic() ) {
         beta.push_back(NAN);
@@ -45,10 +46,10 @@ class gwas_approx_pql {
       }
       v = (PP.template selfadjointView<Eigen::Lower>() * SNP).dot(SNP); // GPG
       t = SNP.dot(Py); // GPZ
+
       beta.push_back(t/v);
       sd_beta.push_back(1/sqrt(v));
     }
- 
     S.L["beta"] = wrap(beta);
     S.L["sd"] = wrap(sd_beta);
   }

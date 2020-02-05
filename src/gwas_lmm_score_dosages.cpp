@@ -6,8 +6,8 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 List GWAS_lmm_score_dosages(CharacterVector filename, NumericVector PY, NumericMatrix P, int beg, int end) {
-  snp_filler_dosages<double> S(filename, beg, end, PY.size());
-  gwas_lmm_score<double> x(PY, P, S);
+  snp_filler_dosages<float> S(filename, beg, end, PY.size());
+  gwas_lmm_score<float> x(PY, P, S);
   x.run_tests();
 
   List R;
