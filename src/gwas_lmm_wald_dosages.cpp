@@ -5,8 +5,8 @@
 //[[Rcpp::export]]
 List GWAS_lmm_wald_dosages(CharacterVector filename, NumericVector Y, NumericMatrix X,
                        int p, NumericVector Sigma, NumericMatrix U, int beg, int end, double tol) {
-  snp_filler_dosages<double> S(filename, beg, end, Y.size());
-  gwas_lmm_wald<double> x(Y, X, p, Sigma, U, tol, S);
+  snp_filler_dosages<float> S(filename, beg, end, Y.size());
+  gwas_lmm_wald<float> x(Y, X, p, Sigma, U, tol, S);
   x.run_tests();
 
   List R;

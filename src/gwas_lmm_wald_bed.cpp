@@ -5,8 +5,8 @@
 //[[Rcpp::export]]
 List GWAS_lmm_wald_bed(XPtr<matrix4> pA, NumericVector pp, NumericVector Y, NumericMatrix X,
                        int p, NumericVector Sigma, NumericMatrix U, int beg, int end, double tol) {
-  snp_filler_additive_bed<double> S(pA, pp, beg, end);
-  gwas_lmm_wald<double> x(Y, X, p, Sigma, U, tol, S);
+  snp_filler_additive_bed<float> S(pA, pp, beg, end);
+  gwas_lmm_wald<float> x(Y, X, p, Sigma, U, tol, S);
   x.run_tests();
   return S.L;
 }

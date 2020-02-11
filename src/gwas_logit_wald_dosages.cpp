@@ -6,8 +6,8 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 List GWAS_logit_wald_dosages(CharacterVector filename, NumericVector Y, NumericMatrix X, int beg, int end, double tol) {
-  snp_filler_dosages<double> S(filename, beg, end, Y.size());
-  gwas_logit_wald<double> x(Y, X, tol, S);
+  snp_filler_dosages<float> S(filename, beg, end, Y.size());
+  gwas_logit_wald<float> x(Y, X, tol, S);
   x.run_tests();
 
   List R;

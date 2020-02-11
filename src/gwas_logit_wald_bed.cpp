@@ -5,8 +5,8 @@
 //[[Rcpp::export]]
 List GWAS_logit_wald_bed(XPtr<matrix4> pA, NumericVector p, NumericVector Y, NumericMatrix X,
                        int beg, int end, double tol) {
-  snp_filler_additive_bed<double> S(pA, p, beg, end);
-  gwas_logit_wald<double> x(Y, X, tol, S);
+  snp_filler_additive_bed<float> S(pA, p, beg, end);
+  gwas_logit_wald<float> x(Y, X, tol, S);
   x.run_tests();
   return S.L;
 }

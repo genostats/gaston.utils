@@ -39,6 +39,7 @@ class gwas_lmm_score {
   void run_tests() {
     std::vector<double> s;
     double t, v;  
+
     while( S.snp_fill( &SNP[0] ) ) {
       if( S.current_snp_monomorphic() ) {
         s.push_back(NAN);
@@ -47,11 +48,10 @@ class gwas_lmm_score {
       //    v = (PP.selfadjointView<Lower>()*SNP).dot(SNP); // marche pas
       //    v = (PP*SNP).dot(SNP);                          // marche mais n'utilise pas la symétrie
       v = (PP.template selfadjointView<Eigen::Lower>() * SNP).dot(SNP); // la solution !
-    
       t = SNP.dot(Py);
       s.push_back(t*t/v);
     }
- 
+
     // on ajoute le score dans S.L 
     S.L["score"] = wrap(s);
   }
