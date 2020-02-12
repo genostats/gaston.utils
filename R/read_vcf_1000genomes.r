@@ -1,4 +1,5 @@
-read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, phase = 3,
+read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, populations, super.populations, phase = 3, 
+                                 version = ifelse(phase == 3, "v5a", "v3"),
                                  get.info = FALSE, haplotypes = FALSE, verbose = getOption("gaston.verbose",TRUE)) {
 
   if(!missing(x)) {
@@ -22,9 +23,9 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
   }
 
   if(phase == 3) {
-    filename <- sprintf("%s/ALL.chr%d.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz", path.expand(dir), chrs)
+    filename <- sprintf("%s/ALL.chr%d.phase3_shapeit2_mvncall_integrated_%s.20130502.genotypes.vcf.gz", path.expand(dir), chrs, version)
   } else if(phase == 1) {
-    filename <- sprintf("%s/ALL.chr%d.SHAPEIT2_integrated_phase1_v3.20101123.snps_indels_svs.genotypes.all.vcf.gz", path.expand(dir), chrs)
+    filename <- sprintf("%s/ALL.chr%d.SHAPEIT2_integrated_phase1_%s.20101123.snps_indels_svs.genotypes.all.vcf.gz", path.expand(dir), chrs, version)
   } else {
     stop("Parameter 'phase' should be 1 or 3 (default)")
   }
