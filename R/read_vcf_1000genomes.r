@@ -17,8 +17,8 @@ read.vcf.1000genomes <- function(dir, x, by = "chr:pos:alleles", samples, popula
   # si le filtre implique de ne lire que certains chromosomes, on en tient compte
   # (note : ça serait bien que le filtre soit capable d'interrompre la lecture d'un chromosome
   #  en tenant compte du fait que les SNPs sont dans l'ordre... ou d'utiliser le tabix... mouais...)
+  chrs <- 1:22 
   if(filter.snps) {
-    chrs <- 1:22 
     chrs <- chrs[ chrs %in% x$chr ]
   }
 
