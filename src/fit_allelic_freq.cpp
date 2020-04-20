@@ -1,6 +1,5 @@
 #include <RcppArmadillo.h>
 #include "gaston/matrix4.h"
-#include "gaston/logit.h"
 #include <iostream>
 
 using namespace Rcpp;

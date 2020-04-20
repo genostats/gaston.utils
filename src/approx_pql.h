@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
 #include <iostream>
-#include "logit_model.h"
+#include "gaston/logit_model.h"
 #include "diago3.h"
 #include <cmath>
 

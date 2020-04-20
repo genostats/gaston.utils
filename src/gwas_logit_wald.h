@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 #include <RcppEigen.h>
 #include <string>
-#include "logit_model.h"
+#include "gaston/logit_model.h"
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"

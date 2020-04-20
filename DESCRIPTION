@@ -1,14 +1,14 @@
 Package: gaston.utils
 Type: Package
 Title: Parallel GWAS with gaston
-Version: 0.3.5
-Date: 2017-03-11
+Version: 0.3.6
+Date: 2020-02-21
 Encoding: UTF-8
 Author: Hervé Perdry 
 Maintainer: Hervé Perdry <herve.perdry@u-psud.fr>
 Description: Miscellaneous functions to use with Gaston
 License: GPL-3
 LinkingTo: Rcpp, RcppEigen, gaston, RcppArmadillo, RcppParallel
-Depends: R.utils, Rcpp, parallel, gaston (>= 1.5.5)
+Depends: R.utils, Rcpp, parallel, gaston (>= 1.5.6)
 NeedsCompilation: yes
 LazyData: true
