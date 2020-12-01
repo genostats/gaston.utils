@@ -27,4 +27,4 @@ export(Fst)
 export(add.ld.scores)
 
 export(weighted.col.means)
-export(snp2na)
+export(snp2na, snp.modif)

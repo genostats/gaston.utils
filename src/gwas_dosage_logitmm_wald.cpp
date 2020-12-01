@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <string>
 #include "gaston.h"
+#include "gaston/any.h"
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"
