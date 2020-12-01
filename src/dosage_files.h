@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 #include <iostream>
 #include <fstream>
-#include "gzstream.h"
+#include "gaston/gzstream.h"
 #include "token.h"
 #include "read_gen_line.h"
 #include "read_vcf_header.h"
