@@ -1,7 +1,7 @@
 #include <Rcpp.h>
 #include <string>
-#include "gaston.h"
-#include "gaston/any.h"
+#include "gaston/matrix-varia.h"
+#include "gaston/ai-reml-logit-1k-covar.h"
 #include <iostream>
 #include <fstream>
 #include "gzstream.h"
