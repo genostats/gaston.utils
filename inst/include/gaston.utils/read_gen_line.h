@@ -21,6 +21,13 @@ inline void parse_gen_line(std::string line, std::vector<scalar_t> & dosage, std
   }
 }
 
+inline void parse_gen_line(std::string line, std::string & snp_id, int & snp_pos, std::string & A1, std::string & A2) {
+  std::istringstream li(line);
+  std::string tirets;
+  if(!(li >> tirets && li >> snp_id && li >> snp_pos && li >> A1 && li >> A2))
+    stop("gen file format error");
+}
+
 template<typename scalar_t>
 inline bool read_gen_line(igzstream & in, std::vector<scalar_t> & dosage, std::string & snp_id, 
                           int & snp_pos, std::string & A1, std::string & A2) {
@@ -57,6 +64,13 @@ inline void parse_gen_line_pes(std::string line, std::vector<scalar_t> & dosage,
     }
   }
   std::replace(dosage.begin(), dosage.end(), (scalar_t) -1.0, somme/n);
+}
+
+inline void parse_gen_line_pes(std::string line, std::string & snp_id, std::string & snp_chr,
+                               int & snp_pos, std::string & A1, std::string & A2) {
+  std::istringstream li(line);
+  if(!(li >> snp_id >> snp_chr >> snp_pos >> A1 >> A2))
+    stop("gen file format error");
 }
 
 template<typename scalar_t>
