@@ -13,11 +13,11 @@ LD.clump <- function(x, p, r2.threshold, p.threshold, max.dist = 500e3) {
   if(length(p) != ncol(x))
     stop("Dimensions mismatch")
 
+  or <- order(p) - 1L # -1 pour des indices qui démarrent à 0 ds la fction c++
   if(!missing(p.threshold)) {
-    p <- p[ p < p.threshold ]
-    if(length(p) == 0) stop("too stringent p.threshold ?")
+    or <- or[ p[or + 1L] < p.threshold ]
+    if(length(or) == 0) stop("too stringent p.threshold ?")
   }
-  or <- order(p) - 1 # -1 pour des indices qui démarrent à 0 ds la fction c++
 
   I <- .Call("ld_clump", PACKAGE = "gaston.utils", x@bed, x@mu, x@sigma, r2.threshold, x@snps$pos, x@snps$chr, max.dist, or);
 
